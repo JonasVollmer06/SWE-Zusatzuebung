@@ -10,6 +10,8 @@ import (
 
 type fakeWriteRepository struct {
 	createFunc func(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	deleteFunc func(ctx context.Context, id int) error
+	resetFunc  func(ctx context.Context) error
 }
 
 func (r *fakeWriteRepository) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
@@ -18,6 +20,22 @@ func (r *fakeWriteRepository) Create(ctx context.Context, request CreateFussball
 	}
 
 	return r.createFunc(ctx, request)
+}
+
+func (r *fakeWriteRepository) Delete(ctx context.Context, id int) error {
+	if r.deleteFunc == nil {
+		return errors.New("unexpected Delete call")
+	}
+
+	return r.deleteFunc(ctx, id)
+}
+
+func (r *fakeWriteRepository) Reset(ctx context.Context) error {
+	if r.resetFunc == nil {
+		return errors.New("unexpected Reset call")
+	}
+
+	return r.resetFunc(ctx)
 }
 
 func TestWriteServiceCreate(t *testing.T) {
@@ -136,5 +154,48 @@ func TestWriteServiceCreateReturnsRepositoryError(t *testing.T) {
 
 	if !errors.Is(err, expectedErr) {
 		t.Fatalf("expected repository error, got %v", err)
+	}
+}
+
+func TestWriteServiceDelete(t *testing.T) {
+	service := NewWriteService(&fakeWriteRepository{
+		deleteFunc: func(_ context.Context, id int) error {
+			if id != 1000 {
+				t.Fatalf("expected id 1000, got %d", id)
+			}
+
+			return nil
+		},
+	})
+
+	if err := service.Delete(context.Background(), 1000); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
+func TestWriteServiceDeleteRejectsInvalidID(t *testing.T) {
+	service := NewWriteService(&fakeWriteRepository{})
+
+	err := service.Delete(context.Background(), 0)
+
+	if !errors.Is(err, ErrInvalidID) {
+		t.Fatalf("expected ErrInvalidID, got %v", err)
+	}
+}
+
+func TestWriteServiceReset(t *testing.T) {
+	called := false
+	service := NewWriteService(&fakeWriteRepository{
+		resetFunc: func(_ context.Context) error {
+			called = true
+			return nil
+		},
+	})
+
+	if err := service.Reset(context.Background()); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if !called {
+		t.Fatal("expected repository reset to be called")
 	}
 }

@@ -288,3 +288,17 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   unbekannte JSON-Felder wurden ergaenzt. Die technische README dokumentiert den
   neuen Bruno-Ordner und den Hinweis, vor mehrfachen erfolgreichen POST-Tests bei
   Bedarf `reset-db.ps1` auszufuehren.
+- Nutzerrequest: In Bruno soll es einen Request geben, mit dem die Datenbank
+  resetet wird. Zusaetzlich sollen einfache Delete- und Post-Funktionen im Server
+  ergaenzt und dafuer Bruno, Tests, Repository, Service und Router angepasst
+  werden.
+- KI-Antwort/Entscheidung: `DELETE /fussballer/{id}` wurde als normaler
+  REST-Endpunkt umgesetzt. Fuer den Datenbank-Reset wurde `POST /fussballer/reset`
+  als lokaler Entwicklungs-/Test-Endpunkt umgesetzt. Das Repository nutzt GORM
+  fuer Delete und setzt beim Reset die Tabellen per Transaktion zurueck, liest die
+  CSV-Dateien aus `extras/compose/postgres/init/fussballer/csv` und fuegt die
+  Seed-Daten mit festen IDs wieder ein.
+- Ergebnis: Repository, Write-Service und Router wurden erweitert. Unit-Tests
+  und Integrationstests fuer Delete und Reset wurden ergaenzt. Bruno enthaelt nun
+  die Ordner `REST/Loeschen` und `REST/Datenbank`, inklusive Request
+  `DB auf CSV Stand resetten`. `scripts/check.ps1` ist erfolgreich.

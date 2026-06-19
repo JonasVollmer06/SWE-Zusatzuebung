@@ -12,6 +12,8 @@ var ErrValidation = errors.New("validation failed")
 
 type WriteRepository interface {
 	Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	Delete(ctx context.Context, id int) error
+	Reset(ctx context.Context) error
 }
 
 type WriteService struct {
@@ -38,6 +40,18 @@ func (s *WriteService) Create(ctx context.Context, request CreateFussballerReque
 	}
 
 	return s.repository.Create(ctx, request)
+}
+
+func (s *WriteService) Delete(ctx context.Context, id int) error {
+	if id < 1 {
+		return ErrInvalidID
+	}
+
+	return s.repository.Delete(ctx, id)
+}
+
+func (s *WriteService) Reset(ctx context.Context) error {
+	return s.repository.Reset(ctx)
 }
 
 func normalizeCreateRequest(request CreateFussballerRequest) CreateFussballerRequest {

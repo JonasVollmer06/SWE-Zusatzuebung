@@ -44,6 +44,8 @@ func (r fakeReader) Count(ctx context.Context, criteria SearchCriteria) (int, er
 
 type fakeWriter struct {
 	createFunc func(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	deleteFunc func(ctx context.Context, id int) error
+	resetFunc  func(ctx context.Context) error
 }
 
 func (w fakeWriter) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
@@ -52,6 +54,22 @@ func (w fakeWriter) Create(ctx context.Context, request CreateFussballerRequest)
 	}
 
 	return w.createFunc(ctx, request)
+}
+
+func (w fakeWriter) Delete(ctx context.Context, id int) error {
+	if w.deleteFunc == nil {
+		return errors.New("unexpected Delete call")
+	}
+
+	return w.deleteFunc(ctx, id)
+}
+
+func (w fakeWriter) Reset(ctx context.Context) error {
+	if w.resetFunc == nil {
+		return errors.New("unexpected Reset call")
+	}
+
+	return w.resetFunc(ctx)
 }
 
 func TestRouterFindByID(t *testing.T) {
@@ -319,5 +337,81 @@ func TestRouterCreateReturnsValidationError(t *testing.T) {
 
 	if response.Code != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+}
+
+func TestRouterDelete(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		deleteFunc: func(_ context.Context, id int) error {
+			if id != 1000 {
+				t.Fatalf("expected id 1000, got %d", id)
+			}
+
+			return nil
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodDelete, "/1000", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("expected status %d, got %d", http.StatusNoContent, response.Code)
+	}
+}
+
+func TestRouterDeleteRejectsInvalidID(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodDelete, "/xyz", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterDeleteReturnsNotFound(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		deleteFunc: func(_ context.Context, _ int) error {
+			return ErrNotFound
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodDelete, "/1000", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterReset(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		resetFunc: func(_ context.Context) error {
+			return nil
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodPost, "/reset", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+
+	var result map[string]string
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+		t.Fatalf("expected JSON body, got %v", err)
+	}
+	if result["status"] != "reset" {
+		t.Fatalf("expected reset status, got %+v", result)
 	}
 }

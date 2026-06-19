@@ -47,11 +47,15 @@ kann.
   `internal/fussballer/write_service.go`.
 - Read-Service, Read-Router und Write-Router sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
+- Delete-Endpunkt und HTTP-Reset-Endpunkt sind implementiert:
+  `DELETE /fussballer/{id}` und `POST /fussballer/reset`.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
   `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
   und `internal/integration/helpers_test.go`.
 - Integrationstests fuer `POST /fussballer` sind implementiert:
   `internal/integration/post_create_test.go`.
+- Integrationstests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
+  sind implementiert: `internal/integration/delete_reset_test.go`.
 - Bruno-Collection fuer die lesenden und schreibenden REST-Endpunkte ist angelegt:
   `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
@@ -307,6 +311,10 @@ Bruno-Requests:
   `GET /fussballer` mit Query-Parametern.
 - `extras/bruno/fussballer/REST/Neuanlegen`: Beispiele fuer `POST /fussballer`,
   inklusive erfolgreichem Anlegen und Validierungsfehlern.
+- `extras/bruno/fussballer/REST/Loeschen`: Beispiele fuer
+  `DELETE /fussballer/{id}`.
+- `extras/bruno/fussballer/REST/Datenbank`: Request fuer
+  `POST /fussballer/reset`.
 
 Hinweis: Der erfolgreiche Bruno-POST nutzt den Username `bruno-create`. Wenn der
 Request mehrfach ausgefuehrt wird, sollte vorher `reset-db.ps1` laufen, damit die
@@ -365,6 +373,8 @@ swe_zusatzuebung/
       fussballer/
         opencollection.yml
         REST/
+          Datenbank/
+          Loeschen/
           Neuanlegen/
           Suche mit ID/
           Suche mit Suchparameter/
@@ -568,6 +578,41 @@ Validierung:
 - `username` ist Pflichtfeld.
 - `position` muss einer der erlaubten Enum-Werte sein.
 
+### Fussballer loeschen
+
+```http
+DELETE /fussballer/{id}
+```
+
+Zweck: Einen Fussballer anhand der ID loeschen.
+
+Erfolgsantwort:
+
+```text
+204 No Content
+```
+
+Nicht vorhandene oder ungueltige IDs liefern `404 Not Found`.
+
+### Datenbank auf CSV-Stand resetten
+
+```http
+POST /fussballer/reset
+```
+
+Zweck: Entwicklungs- und Testhilfe, um die Tabellen `fussballer`, `adresse` und
+`auszeichnung` wieder aus den CSV-Dateien im Projekt zu befuellen.
+
+Antwort:
+
+```json
+{"status":"reset"}
+```
+
+Hinweis: Dieser Endpunkt ist bewusst nur fuer die Zusatzuebung und lokale Tests
+gedacht. In einer echten Produktivanwendung wuerde man so einen Reset-Endpunkt
+nicht frei anbieten.
+
 ## Was der Server koennen soll
 
 Aktuell kann der Server:
@@ -580,6 +625,8 @@ Aktuell kann der Server:
 - Fussballer per Query-Parameter suchen: `GET /fussballer`,
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
 - neue Fussballer per JSON anlegen: `POST /fussballer`,
+- Fussballer per ID loeschen: `DELETE /fussballer/{id}`,
+- die Datenbank per HTTP auf CSV-Stand resetten: `POST /fussballer/reset`,
 - Eingaben beim Neuanlegen validieren,
 - Fehler als sinnvolle HTTP-Statuscodes zurueckgeben,
 - ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
@@ -598,6 +645,8 @@ Geplant:
   erreichbar ist, werden diese Tests uebersprungen.
 - Write-Integrationstests pruefen den echten POST-Weg und lesen den erzeugten
   Datensatz anschliessend wieder per `GET /fussballer/{id}`.
+- Delete- und Reset-Integrationstests pruefen das Loeschen echter Datensaetze und
+  das Wiederherstellen des CSV-Ausgangsstands.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -620,4 +669,7 @@ go test ./...
 - GitHub Actions CI ist eingerichtet.
 - Write-Integrationstests sind eingerichtet und getestet.
 - Bruno-Requests fuer `POST /fussballer` sind eingerichtet.
+- Delete- und Reset-Endpunkte sind eingerichtet und getestet.
+- Bruno-Requests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
+  sind eingerichtet.
 - Offen: optional Keycloak/OIDC ergaenzen.
