@@ -165,6 +165,7 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `page` und `size` sowie `count-only`.
 - Ergebnis: `cmd/server/main.go` verdrahtet nun Repository, Read-Service und
   Fussballer-Router. Router- und Service-Tests wurden ergaenzt; `go test ./...`
+  ist erfolgreich.
 - Nutzerrequest: Orientierung am alten Hono-Projekt und Umsetzung eines
   Read-Service fuer den Lesezugriff, inklusive Tests falls sinnvoll.
 - KI-Antwort/Entscheidung: Der Read-Service wurde in Go als Schicht ueber dem
@@ -233,3 +234,31 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 - Ergebnis: `scripts/check.ps1` ist erfolgreich. Smoke-Test gegen PostgreSQL fuer
   `GET /fussballer?position=TORWART` und `POST /fussballer` war erfolgreich;
   danach wurde die DB wieder auf CSV-Stand gesetzt.
+- Nutzerrequest: Integrationstests fuer die lesenden REST-Endpunkte schreiben,
+  orientiert an den Integrationstests aus dem alten Hono-Projekt.
+- KI-Antwort/Entscheidung: Es wurden Integrationstests in
+  `internal/integration/read_api_test.go` angelegt. Sie starten keinen externen
+  HTTP-Server, sondern bauen mit `httptest` die echte Kette aus PostgreSQL-Pool,
+  Repository, Read-Service, Fussballer-Router und Server-Router auf.
+- Ergebnis: Die Tests laufen gegen die echte PostgreSQL-Datenbank, werden bei
+  fehlender DB sauber uebersprungen, und `go test ./...` ist erfolgreich.
+- Nutzerrequest: Die Integrationstests sollen wie im alten Hono-Projekt auf
+  mehrere Dateien aufgeteilt werden.
+- KI-Antwort/Entscheidung: Die Tests wurden in `helpers_test.go`,
+  `get_id_test.go` und `get_query_test.go` aufgeteilt. Getestet werden weiterhin
+  vorhandene und fehlende IDs, ungueltige IDs, ETag/`If-None-Match`,
+  Listenabruf, Suche nach `nachname`, `nationalitaet`, `position`, ungueltige
+  Suchparameter und `count-only`.
+- Ergebnis: `go test ./internal/integration -count=1 -v` und `go test ./...`
+  sind erfolgreich.
+- Nutzerrequest: Bruno fuer den Read-Teil erstellen und sich dabei am alten
+  Hono-Projekt orientieren.
+- KI-Antwort/Entscheidung: Die Bruno-Collection wurde unter
+  `extras/bruno/fussballer` im gleichen Aufbau wie im alten Projekt angelegt:
+  `opencollection.yml`, `REST/folder.yml`, `REST/Suche mit ID` und
+  `REST/Suche mit Suchparameter`. Die Requests nutzen `{{baseUrl}}` mit
+  `http://localhost:8080` und `{{restUrl}}/fussballer`.
+- Ergebnis: Bruno-Requests fuer vorhandene und fehlende IDs, ETag/
+  `If-None-Match`, Listenabruf, Paging, Suche nach `nachname`, `nationalitaet`,
+  `position`, ungueltige Suchparameter und `count-only` wurden angelegt.
+  Die hinterlegten Endpunkte wurden per HTTP-Smoke-Test erfolgreich geprueft.
