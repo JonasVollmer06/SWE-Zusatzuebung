@@ -8,6 +8,7 @@ import (
 
 	"swe-zusatzuebung/internal/config"
 	"swe-zusatzuebung/internal/database"
+	"swe-zusatzuebung/internal/fussballer"
 	"swe-zusatzuebung/internal/server"
 )
 
@@ -24,11 +25,15 @@ func main() {
 
 	log.Println("database connection is ready")
 
+	fussballerRepository := fussballer.NewRepository(dbpool)
+	fussballerReadService := fussballer.NewReadService(fussballerRepository)
+	fussballerRouter := fussballer.NewRouter(fussballerReadService)
+
 	addr := fmt.Sprintf(":%s", cfg.Port)
 
 	log.Printf("starting server on http://localhost%s", addr)
 
-	if err := http.ListenAndServe(addr, server.NewRouter()); err != nil {
+	if err := http.ListenAndServe(addr, server.NewRouter(fussballerRouter)); err != nil {
 		log.Fatalf("server stopped: %v", err)
 	}
 }

@@ -33,6 +33,8 @@ kann.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Repository fuer den Lesezugriff auf Fussballer ist implementiert:
   `internal/fussballer/repository.go`.
+- Read-Service und Router fuer den Lesezugriff sind implementiert:
+  `internal/fussballer/service.go` und `internal/fussballer/router.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -426,8 +428,12 @@ Aktuell kann der Server:
 - per HTTP starten,
 - beim Start ein Banner ausgeben,
 - beim Start eine PostgreSQL-Verbindung aufbauen und pruefen,
-- einen Health-Endpunkt anbieten.
-- im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
+- einen Health-Endpunkt anbieten,
+- Fussballer per ID lesen: `GET /fussballer/{id}`,
+- Fussballer per Query-Parameter suchen: `GET /fussballer`,
+- Fussballer zaehlen: `GET /fussballer?count-only=true`,
+- ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
+  beantworten.
 
 Am Ende soll der Server zusaetzlich:
 
@@ -455,6 +461,5 @@ go test ./...
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
-- Service fuer `GET /fussballer/{id}` implementieren.
-- Router fuer `GET /fussballer/{id}` implementieren.
-- Tests ergaenzen.
+- Router fuer `POST /fussballer` implementieren.
+- Validierung fuer `POST /fussballer` anbinden.
