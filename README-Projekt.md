@@ -39,10 +39,10 @@ kann.
   Formatierung, `go vet` und Tests.
 - Repository fuer den Lesezugriff auf Fussballer ist implementiert:
   `internal/fussballer/repository.go`.
+- Repository fuer den Schreibzugriff auf Fussballer ist implementiert:
+  `Repository.Create(...)` in `internal/fussballer/repository.go`.
 - Read-Service und Router fuer den Lesezugriff sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
-- Read-Service fuer den Lesezugriff ist implementiert:
-  `internal/fussballer/service.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -507,6 +507,7 @@ Geplant:
 
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
 - Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
+- Integrationstests fuer komplette REST-Ablaeufe gegen eine laufende Testdatenbank.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -522,12 +523,10 @@ go test ./...
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
-- Router fuer `POST /fussballer` implementieren.
-- Validierung fuer `POST /fussballer` anbinden.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
-- Repository fuer `GET /fussballer/{id}` implementieren.
-- Service fuer `GET /fussballer/{id}` implementieren.
-- Router fuer `GET /fussballer/{id}` implementieren.
-- Tests ergaenzen.
+- Write-Service fuer `POST /fussballer` mit Validierung implementieren.
+- Write-Router fuer `POST /fussballer` implementieren.
+- Integrationstests ergaenzen.
+- Bruno-Collection fuer REST-Requests ergaenzen.

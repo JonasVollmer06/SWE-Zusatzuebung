@@ -173,3 +173,15 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Slice mit `content` und `totalElements`.
 - Ergebnis: Service-Tests mit Fake-Repository wurden ergaenzt; `go test ./...`
   ist erfolgreich.
+- Nutzerrequest: Aktuellen Stand von `main` holen und danach schrittweise die
+  Write-Komponenten bauen. Zuerst soll nur das Repository fuer Schreibzugriff
+  ergaenzt werden. Integrationstests und Bruno-Requests sollen auf die TODO-Liste.
+- KI-Antwort/Entscheidung: `main` wurde per Fast-Forward auf `origin/main`
+  aktualisiert und ein neuer Branch `codex-write-repository` erstellt.
+  `Repository.Create(...)` wurde in `internal/fussballer/repository.go`
+  implementiert. Die Methode arbeitet mit einer Transaktion, fuegt zuerst einen
+  Datensatz in `fussballer.fussballer` ein und legt optional eine Adresse in
+  `fussballer.adresse` an.
+- Ergebnis: `scripts/check.ps1` ist erfolgreich. TODOs fuer Write-Service,
+  Write-Router, Integrationstests und Bruno-Collection wurden in
+  `README-Projekt.md` ergaenzt.

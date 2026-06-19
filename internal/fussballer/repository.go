@@ -148,6 +148,33 @@ func (r *Repository) Count(ctx context.Context, criteria SearchCriteria) (int, e
 	return count, nil
 }
 
+func (r *Repository) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rollbackIfOpen(ctx, tx)
+
+	player, err := insertFussballer(ctx, tx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	if request.Adresse != nil {
+		address, err := insertAdresse(ctx, tx, *request.Adresse, player.ID)
+		if err != nil {
+			return nil, err
+		}
+		player.Adresse = address
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
 func (r *Repository) findAuszeichnungen(ctx context.Context, fussballerID int) ([]Auszeichnung, error) {
 	const query = `
 		SELECT id, bezeichnung, saison, fussballer_id
@@ -175,6 +202,80 @@ func (r *Repository) findAuszeichnungen(ctx context.Context, fussballerID int) (
 	}
 
 	return awards, nil
+}
+
+func insertFussballer(ctx context.Context, tx pgx.Tx, request CreateFussballerRequest) (*Fussballer, error) {
+	const query = `
+		INSERT INTO fussballer.fussballer (
+			nachname,
+			nationalitaet,
+			position,
+			geburtsdatum,
+			username
+		)
+		VALUES ($1, $2, $3::fussballer.position_enum, $4, $5)
+		RETURNING
+			id,
+			version,
+			nachname,
+			nationalitaet,
+			position::text,
+			geburtsdatum,
+			username,
+			erzeugt,
+			aktualisiert,
+			NULL::integer,
+			NULL::text,
+			NULL::text,
+			NULL::text,
+			NULL::integer`
+
+	return scanFussballer(tx.QueryRow(
+		ctx,
+		query,
+		request.Nachname,
+		request.Nationalitaet,
+		string(request.Position),
+		request.Geburtsdatum,
+		request.Username,
+	))
+}
+
+func insertAdresse(ctx context.Context, tx pgx.Tx, request CreateAdresseRequest, fussballerID int) (*Adresse, error) {
+	const query = `
+		INSERT INTO fussballer.adresse (
+			plz,
+			ort,
+			bundesland,
+			fussballer_id
+		)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, plz, ort, bundesland, fussballer_id`
+
+	var address Adresse
+	err := tx.QueryRow(
+		ctx,
+		query,
+		request.PLZ,
+		request.Ort,
+		request.Bundesland,
+		fussballerID,
+	).Scan(
+		&address.ID,
+		&address.PLZ,
+		&address.Ort,
+		&address.Bundesland,
+		&address.FussballerID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &address, nil
+}
+
+func rollbackIfOpen(ctx context.Context, tx pgx.Tx) {
+	_ = tx.Rollback(ctx)
 }
 
 type rowScanner interface {
