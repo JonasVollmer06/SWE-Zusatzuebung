@@ -262,3 +262,17 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `If-None-Match`, Listenabruf, Paging, Suche nach `nachname`, `nationalitaet`,
   `position`, ungueltige Suchparameter und `count-only` wurden angelegt.
   Die hinterlegten Endpunkte wurden per HTTP-Smoke-Test erfolgreich geprueft.
+- Nutzerrequest: Das Projekt soll auf den Stand von `main` gebracht werden.
+  Danach sollen nach dem Schema der Read-Integrationstests passende
+  Write-Integrationstests ergaenzt werden.
+- KI-Antwort/Entscheidung: `main` wurde auf `origin/main` aktualisiert und der
+  Feature-Branch `write-integration-tests` erstellt. Der gemeinsame
+  Integrationstest-Helper baut nun die echte API-Kette aus GORM-Datenbank,
+  Repository, Read-Service, Write-Service, Fussballer-Router und Server-Router
+  auf. Fuer POST-Tests wurde ein JSON-Request-Helper und eine Cleanup-Funktion
+  fuer eindeutige Test-Usernamen ergaenzt.
+- Ergebnis: `internal/integration/post_create_test.go` prueft erfolgreiches
+  `POST /fussballer` inklusive Persistenzpruefung per anschliessendem
+  `GET /fussballer/{id}` sowie Fehlerfaelle fuer ungueltiges JSON, fehlende
+  Pflichtfelder, ungueltige Position, falschen Content-Type und unbekannte
+  JSON-Felder. `scripts/check.ps1` ist erfolgreich.

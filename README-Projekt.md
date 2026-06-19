@@ -50,6 +50,8 @@ kann.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
   `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
   und `internal/integration/helpers_test.go`.
+- Integrationstests fuer `POST /fussballer` sind implementiert:
+  `internal/integration/post_create_test.go`.
 - Bruno-Collection fuer die lesenden REST-Endpunkte ist angelegt:
   `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
@@ -318,7 +320,7 @@ fuer zusammenhaengende Schritte.
 Aktueller Feature-Branch:
 
 ```text
-codex-fussballer-read-api
+write-integration-tests
 ```
 
 Grundregel:
@@ -333,7 +335,7 @@ Nuetzliche Git-Befehle:
 git status
 git add .
 git commit -m "Kurze Beschreibung"
-git push -u origin codex-fussballer-read-api
+git push -u origin write-integration-tests
 ```
 
 ## Geplante Projektstruktur
@@ -382,6 +384,11 @@ swe_zusatzuebung/
       validation.go
       write_service.go
       write_service_test.go
+    integration/
+      helpers_test.go
+      get_id_test.go
+      get_query_test.go
+      post_create_test.go
   scripts/
     check.ps1
     format-check.ps1
@@ -415,6 +422,8 @@ swe_zusatzuebung/
 - `validation.go`: Regeln fuer neue Fussballer.
 - `write_service.go`: Schreiblogik fuer neue Fussballer inklusive Validierung.
 - `write_service_test.go`: Unit-Tests fuer Write-Service und Validierungsfehler.
+- `internal/integration`: Integrationstests fuer die echte HTTP-Kette mit
+  PostgreSQL.
 
 ## Datenbankgrundlage
 
@@ -557,17 +566,16 @@ Aktuell kann der Server:
 - Fussballer per ID lesen: `GET /fussballer/{id}`,
 - Fussballer per Query-Parameter suchen: `GET /fussballer`,
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
+- neue Fussballer per JSON anlegen: `POST /fussballer`,
+- Eingaben beim Neuanlegen validieren,
+- Fehler als sinnvolle HTTP-Statuscodes zurueckgeben,
 - ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
   beantworten.
 
 Am Ende soll der Server zusaetzlich:
 
-- Fussballer aus PostgreSQL lesen,
-- Fussballer ueber Query-Parameter suchen,
-- neue Fussballer per JSON anlegen,
-- Eingaben beim Neuanlegen validieren,
-- Fehler als sinnvolle HTTP-Statuscodes zurueckgeben,
-- einfache Tests fuer Router/Handler enthalten.
+- Bruno-Requests fuer den Write-Teil enthalten.
+- optional Keycloak/OIDC ergaenzen, falls nach dem REST-Kern noch Zeit bleibt.
 
 ## Teststrategie
 
@@ -576,6 +584,8 @@ Geplant:
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
 - Integrationstests gegen eine laufende PostgreSQL-Datenbank; falls PostgreSQL nicht
   erreichbar ist, werden diese Tests uebersprungen.
+- Write-Integrationstests pruefen den echten POST-Weg und lesen den erzeugten
+  Datensatz anschliessend wieder per `GET /fussballer/{id}`.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -596,3 +606,5 @@ go test ./...
 - PostgreSQL-Setup, Start und DB-Reset sind in eigene Skripte aufgeteilt.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
+- Write-Integrationstests sind eingerichtet und getestet.
+- Offen: Bruno-Requests fuer `POST /fussballer` ergaenzen.
