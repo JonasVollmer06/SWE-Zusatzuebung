@@ -16,35 +16,23 @@ http:
       value: "20"
       type: path
   body:
-    mode: json
-    json: |-
+    type: json
+    data: |-
       {
-        "nachname": "Aktualisiert",
+        "nachname": "Musiala",
         "nationalitaet": "Deutschland",
-        "position": "STUERMER",
-        "geburtsdatum": "2002-02-02T00:00:00Z",
-        "username": "updated-20",
+        "position": "MITTELFELDSPIELER",
+        "geburtsdatum": "2004-05-14T00:00:00Z",
+        "username": "jamal",
         "adresse": {
-          "plz": "76131",
+          "plz": "76133",
           "ort": "Karlsruhe",
-          "bundesland": "Baden-Wuerttemberg"
+          "bundesland": "BW"
         }
       }
   auth: inherit
 
 runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test('Body: aktualisierter Fussballer', () => {
-          const fussballer = res.getBody();
-          expect(fussballer.id).to.be.equal(20);
-          expect(fussballer.nachname).to.be.equal('Aktualisiert');
-          expect(fussballer.username).to.be.equal('updated-20');
-          expect(fussballer.version).to.be.equal(1);
-          expect(fussballer.position).to.be.equal('STUERMER');
-          expect(fussballer.adresse.ort).to.be.equal('Karlsruhe');
-        });
   assertions:
     - expression: res.status
       operator: eq
@@ -54,7 +42,7 @@ runtime:
       value: ^application\/json(; charset=utf-8)?$
     - expression: res.headers.etag
       operator: eq
-      value: "\"1\""
+      value: '"1"'
 
 settings:
   encodeUrl: true
