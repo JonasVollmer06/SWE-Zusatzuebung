@@ -104,3 +104,13 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Datenstruktur fuer Repository, Service und Router bilden. Angelegt wurden
   `.gitignore`, `internal/fussballer/model.go` und ein erster Test
   `internal/fussballer/model_test.go` fuer gueltige Positionswerte.
+- Nutzerrequest: PostgreSQL soll nicht nur ueber das alte Projekt gestartet werden,
+  sondern auch direkt aus diesem Zusatzuebungsprojekt. Orientierung an der alten
+  PostgreSQL-ReadMe.
+- KI-Antwort/Entscheidung: Die PostgreSQL-Compose-Umgebung wurde nach
+  `extras/compose/postgres` uebernommen, inklusive `compose.yml`, `password.txt`,
+  `init`-Dateien und eigener kurzer Start-ReadMe.
+- Ergebnis: Der vorher aus dem alten Projekt gestartete Container wurde gestoppt und
+  PostgreSQL erfolgreich aus `swe_zusatzuebung\extras\compose\postgres` gestartet.
+  Der Container ist `healthy`; die Abfrage auf `fussballer.fussballer` liefert
+  weiterhin 7 Datensaetze.

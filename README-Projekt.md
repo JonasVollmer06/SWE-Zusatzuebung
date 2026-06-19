@@ -28,6 +28,8 @@ kann.
   angelegt.
 - Erste Models fuer `Fussballer`, `Adresse`, `Auszeichnung`, `Position` und
   `CreateFussballerRequest` wurden angelegt.
+- PostgreSQL kann jetzt direkt aus diesem Projekt gestartet werden:
+  `extras/compose/postgres/compose.yml`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -128,7 +130,7 @@ Testergebnis:
 ok  	swe-zusatzuebung/internal/server
 ```
 
-PostgreSQL-Container aus dem alten Projekt starten:
+PostgreSQL-Container aus diesem Projekt starten:
 
 ```powershell
 docker compose up -d
@@ -137,7 +139,13 @@ docker compose up -d
 Ausgefuehrt im Ordner:
 
 ```text
-C:\Users\jv10s\SWE\Projekte\fussballer\extras\compose\postgres
+C:\Users\jv10s\SWE\Projekte\swe_zusatzuebung\extras\compose\postgres
+```
+
+Alternativ aus dem Projektwurzelordner:
+
+```powershell
+docker compose -f .\extras\compose\postgres\compose.yml up -d
 ```
 
 Docker-Status:
@@ -168,6 +176,16 @@ Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\prisma\sche
 Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\extras\compose\postgres\compose.yml
 Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\extras\compose\postgres\init\fussballer\sql\create-table.sql
 Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\.env
+```
+
+Die PostgreSQL-Compose-Umgebung wurde aus dem alten Projekt in dieses Projekt
+uebernommen:
+
+```text
+extras/compose/postgres/compose.yml
+extras/compose/postgres/password.txt
+extras/compose/postgres/init/
+extras/compose/postgres/ReadMe.md
 ```
 
 Zusaetzlicher Vorlesungsmitschrieb wurde gelesen:
@@ -208,6 +226,18 @@ Tests ausfuehren:
 go test ./...
 ```
 
+Datenbank starten:
+
+```powershell
+docker compose -f .\extras\compose\postgres\compose.yml up -d
+```
+
+Datenbank stoppen:
+
+```powershell
+docker compose -f .\extras\compose\postgres\compose.yml down
+```
+
 ## Git-Arbeitsweise
 
 Wir arbeiten nicht dauerhaft direkt auf `main`, sondern nutzen Feature-Branches
@@ -241,6 +271,13 @@ swe_zusatzuebung/
   cmd/
     server/
       main.go
+  extras/
+    compose/
+      postgres/
+        compose.yml
+        password.txt
+        ReadMe.md
+        init/
   internal/
     config/
       config.go
@@ -265,6 +302,7 @@ swe_zusatzuebung/
 ### Bedeutung der Ordner
 
 - `cmd/server`: Einstiegspunkt der Anwendung. Hier startet der HTTP-Server.
+- `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.
 - `internal/database`: Aufbau und Pruefung der PostgreSQL-Verbindung.
 - `internal/server`: Allgemeiner HTTP-Router, aktuell mit Health Check.
@@ -410,6 +448,7 @@ go test ./...
 ## Offene Punkte
 
 - DB-Verbindung ist grundlegend konfiguriert.
+- PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
 - Repository fuer `GET /fussballer/{id}` implementieren.
 - Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.
