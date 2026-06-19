@@ -120,3 +120,12 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `cmd/server/main.go` beim Start aufgerufen.
 - Ergebnis: `go test ./...` ist erfolgreich; ein kurzer Smoke-Test von `/health`
   war ebenfalls erfolgreich.
+- Nutzerrequest: Aktuellen Stand holen und ein Repository fuer den Lesezugriff
+  erstellen, orientiert am Hono-Projekt, aber passend fuer Go.
+- KI-Antwort/Entscheidung: Der Stand war bereits aktuell. Das Hono-Projekt wurde
+  fuer `findById`, Query-Parameter-Suche und Count als fachliche Vorlage gelesen.
+  In Go wurde `internal/fussballer/repository.go` mit `pgxpool`, SQL-Queries,
+  Fehlern fuer `not found` und ungueltige Suchparameter sowie Suchkriterien fuer
+  `nachname`, `nationalitaet` und `position` umgesetzt.
+- Ergebnis: `go test ./...` ist erfolgreich; Unit-Tests fuer den dynamischen
+  WHERE-Klausel-Aufbau wurden ergaenzt.

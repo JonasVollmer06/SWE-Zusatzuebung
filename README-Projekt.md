@@ -31,6 +31,8 @@ kann.
 - PostgreSQL kann jetzt direkt aus diesem Projekt gestartet werden:
   `extras/compose/postgres/compose.yml`.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
+- Repository fuer den Lesezugriff auf Fussballer ist implementiert:
+  `internal/fussballer/repository.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -425,6 +427,7 @@ Aktuell kann der Server:
 - beim Start ein Banner ausgeben,
 - beim Start eine PostgreSQL-Verbindung aufbauen und pruefen,
 - einen Health-Endpunkt anbieten.
+- im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
 
 Am Ende soll der Server zusaetzlich:
 
@@ -452,7 +455,6 @@ go test ./...
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
-- Repository fuer `GET /fussballer/{id}` implementieren.
 - Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.
 - Tests ergaenzen.
