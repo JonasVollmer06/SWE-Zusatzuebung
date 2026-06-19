@@ -45,7 +45,7 @@ kann.
   `Repository.Create(...)` in `internal/fussballer/repository.go`.
 - Write-Service fuer `POST /fussballer` ist mit Validierung implementiert:
   `internal/fussballer/write_service.go`.
-- Read-Service und Router fuer den Lesezugriff sind implementiert:
+- Read-Service, Read-Router und Write-Router sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
@@ -494,6 +494,31 @@ Content-Type: application/json
 
 Zweck: Einen neuen Fussballer anlegen.
 
+Beispiel:
+
+```json
+{
+  "nachname": "Testmann",
+  "nationalitaet": "Deutschland",
+  "position": "TORWART",
+  "geburtsdatum": "2000-01-02T00:00:00Z",
+  "username": "testmann",
+  "adresse": {
+    "plz": "76131",
+    "ort": "Karlsruhe",
+    "bundesland": "Baden-Wuerttemberg"
+  }
+}
+```
+
+Erfolgsantwort:
+
+```text
+201 Created
+Location: /fussballer/{id}
+ETag: "{version}"
+```
+
 Validierung:
 
 - `nachname` ist Pflichtfeld.
@@ -555,6 +580,5 @@ go test ./...
 - PostgreSQL-Setup, Start und DB-Reset sind in eigene Skripte aufgeteilt.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
-- Write-Router fuer `POST /fussballer` implementieren.
 - Integrationstests ergaenzen.
 - Bruno-Collection fuer REST-Requests ergaenzen.

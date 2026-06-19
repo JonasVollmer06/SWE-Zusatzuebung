@@ -211,3 +211,15 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `postgres-tools.ps1` ausgelagert. `setup.ps1` macht nun nur noch einmalige
   Einrichtung und DB-Anlage, `start.ps1` startet PostgreSQL ohne Datenveraenderung,
   und `reset-db.ps1` setzt die Tabellen auf CSV-Stand zurueck.
+- Nutzerrequest: Write-Router passend zum Read-Router mit chi und passend zum
+  Write-Service bauen. TODOs bleiben Integrationstest Write, Write-Router und
+  Bruno; umgesetzt werden soll jetzt der Write-Router.
+- KI-Antwort/Entscheidung: Neuer Branch `write-router` wurde erstellt.
+  `internal/fussballer/router.go` wurde erweitert: `NewRouter` akzeptiert neben
+  dem Reader optional einen Writer. `POST /fussballer` liest JSON, prueft
+  `Content-Type`, reicht an `WriteService.Create(...)` weiter und antwortet bei
+  Erfolg mit `201 Created`, `Location` und `ETag`.
+- Ergebnis: Router-Unit-Tests fuer erfolgreichen POST, ungueltiges JSON, falschen
+  Content-Type und Validierungsfehler wurden ergaenzt. `scripts/check.ps1` ist
+  erfolgreich. Ein Smoke-Test mit echtem Server und PostgreSQL war erfolgreich;
+  danach wurde die DB wieder mit `reset-db.ps1` auf CSV-Stand gesetzt.
