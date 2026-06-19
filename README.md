@@ -2,11 +2,11 @@
 
 ## Namen
 
-TODO: Namen eintragen.
+Jonas Vollmer, Nick Magin
 
 ## Link zum Git-Repository
 
-TODO: Repository-Link eintragen, sobald vorhanden.
+(https://github.com/JonasVollmer06/SWE-Zusatzuebung)
 
 ## KI-Werkzeuge
 
@@ -19,9 +19,9 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 
 ### Chat-URLs, z.B. https://chatgpt.com
 
-- TODO: Chat-URL eintragen, falls sie fuer die Abgabe benoetigt wird.
-
 ## Frameworks und Bibliotheken
+
+
 
 ### REST-Schnittstelle (Lesen und Neuanlegen)
 
@@ -47,13 +47,12 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 
 ### Optional: OIDC mit Keycloak
 
-- Vorerst nicht geplant, da Keycloak laut Aufgabenstellung optional ist und die Zeit
-  fuer REST, DB-Zugriff, Validierung und Tests priorisiert wird.
+- Tokenlimit wurde erreicht, weiterarbeiten war nicht möglich.
 
 ### Einfacher Integrationstest
 
-- Geplant: Go-Tests mit `net/http/httptest` fuer Handler/Router.
-- Optional spaeter: Integrationstest gegen eine laufende PostgreSQL-Testdatenbank.
+- Go-Tests mit `net/http/httptest` fuer Handler/Router.
+- Integrationstest gegen eine laufende PostgreSQL-Testdatenbank.
 
 ## Prompts/Requests an KI-Agent/en
 
