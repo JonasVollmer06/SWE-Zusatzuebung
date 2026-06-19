@@ -32,8 +32,8 @@ kann.
   `extras/compose/postgres/compose.yml`.
 - Fuer PostgreSQL gibt es ein projektlokales Setup-Script:
   `extras/compose/postgres/setup.ps1`.
-- Das PostgreSQL-Setup-Script setzt die Tabellen bei jedem Lauf auf den Stand der
-  CSV-Dateien zurueck.
+- PostgreSQL-Start und DB-Reset sind in getrennte Skripte aufgeteilt:
+  `start.ps1` und `reset-db.ps1`.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Formatierung, Linting und Gesamtcheck sind ueber PowerShell-Skripte im Ordner
   `scripts` verfuegbar.
@@ -269,14 +269,26 @@ Formatierung, Linting und Tests gemeinsam ausfuehren:
 
 Datenbank starten:
 
-Erstsetup oder reproduzierbares Setup:
+Einmaliges Erstsetup:
 
 ```powershell
 .\extras\compose\postgres\setup.ps1
 ```
 
-Hinweis: Dieses Script startet PostgreSQL und laedt die Tabellen jedes Mal neu aus
-den CSV-Dateien. Dadurch werden Daten, die durch manuelle REST-Requests entstanden
+Normaler Start:
+
+```powershell
+.\extras\compose\postgres\start.ps1
+```
+
+Datenbank auf CSV-Stand zuruecksetzen:
+
+```powershell
+.\extras\compose\postgres\reset-db.ps1
+```
+
+Hinweis: `reset-db.ps1` startet PostgreSQL und laedt die Tabellen neu aus den
+CSV-Dateien. Dadurch werden Daten, die durch manuelle REST-Requests entstanden
 sind, wieder auf den Ausgangsstand zurueckgesetzt.
 
 Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
@@ -334,7 +346,10 @@ swe_zusatzuebung/
         compose.notls.yml
         password.txt
         ReadMe.md
+        postgres-tools.ps1
+        reset-db.ps1
         setup.ps1
+        start.ps1
         init/
   internal/
     config/
@@ -537,6 +552,7 @@ go test ./...
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - DB-Reset auf CSV-Stand ist im PostgreSQL-Setup-Script eingebaut.
+- PostgreSQL-Setup, Start und DB-Reset sind in eigene Skripte aufgeteilt.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
 - Write-Router fuer `POST /fussballer` implementieren.

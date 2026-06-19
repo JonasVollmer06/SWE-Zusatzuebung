@@ -204,3 +204,10 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Datenbank nur bei Bedarf an, setzt die Tabellen aber bei jedem Lauf mit
   `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den CSV-Stand
   zurueck.
+- Nutzerrequest: PostgreSQL-Skripte sauber aufteilen, weil Volume-Erstellung und
+  Init-Dateien-Kopieren nur einmalige Setup-Schritte sind, waehrend Start und
+  DB-Reset getrennte Aufgaben sein sollen.
+- KI-Antwort/Entscheidung: Die gemeinsame Logik wurde nach
+  `postgres-tools.ps1` ausgelagert. `setup.ps1` macht nun nur noch einmalige
+  Einrichtung und DB-Anlage, `start.ps1` startet PostgreSQL ohne Datenveraenderung,
+  und `reset-db.ps1` setzt die Tabellen auf CSV-Stand zurueck.

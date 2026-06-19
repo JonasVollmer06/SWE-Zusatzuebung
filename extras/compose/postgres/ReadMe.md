@@ -10,9 +10,9 @@ werden kann.
 
 ## Starten
 
-### Erstsetup oder reproduzierbares Setup
+### Einmaliges Erstsetup
 
-Das empfohlene Setup fuer dieses Projekt ist:
+Das einmalige Setup fuer dieses Projekt ist:
 
 ```powershell
 .\setup.ps1
@@ -37,15 +37,18 @@ Es fuehrt aus:
 - TLS-Zertifikate nach `/var/lib/postgresql/18/data` kopieren.
 - PostgreSQL normal mit TLS starten.
 - Datenbank `fussballer` anlegen, falls sie noch nicht existiert.
-- Tabellen immer mit `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den
-  Stand der CSV-Dateien zuruecksetzen.
-- Datensaetze in `fussballer.fussballer` zaehlen.
 
-Wenn die Datenbank bereits existiert, wird sie nicht neu angelegt. Die Tabellen
-werden aber bei jedem Aufruf von `setup.ps1` neu aus den CSV-Dateien geladen.
-Das ist gewollt, damit lokale Testdaten nach Requests wieder reproduzierbar sind.
+Wenn die Datenbank bereits existiert, wird sie nicht neu angelegt.
 
 ### Normaler Start
+
+Empfohlen:
+
+```powershell
+.\start.ps1
+```
+
+Das startet PostgreSQL und prueft kurz den Datenbestand.
 
 Aus diesem Ordner:
 
@@ -58,6 +61,19 @@ Oder aus dem Projektwurzelordner:
 ```powershell
 docker compose -f .\extras\compose\postgres\compose.yml up -d
 ```
+
+### Datenbank auf CSV-Stand zuruecksetzen
+
+Wenn Requests die Testdaten veraendert haben, kann die Datenbank wieder aus den
+CSV-Dateien geladen werden:
+
+```powershell
+.\reset-db.ps1
+```
+
+Das Script startet PostgreSQL, legt die Datenbank bei Bedarf an und setzt die
+Tabellen mit `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den
+Stand der CSV-Dateien zurueck.
 
 Status pruefen:
 
