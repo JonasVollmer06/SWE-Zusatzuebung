@@ -44,6 +44,8 @@ kann.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
   `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
   und `internal/integration/helpers_test.go`.
+- Bruno-Collection fuer die lesenden REST-Endpunkte ist angelegt:
+  `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -321,6 +323,12 @@ swe_zusatzuebung/
     workflows/
       ci.yml
   extras/
+    bruno/
+      fussballer/
+        opencollection.yml
+        REST/
+          Suche mit ID/
+          Suche mit Suchparameter/
     compose/
       postgres/
         compose.yml
@@ -360,6 +368,7 @@ swe_zusatzuebung/
 ### Bedeutung der Ordner
 
 - `cmd/server`: Einstiegspunkt der Anwendung. Hier startet der HTTP-Server.
+- `extras/bruno/fussballer`: Bruno-Collection fuer manuelle REST-Requests.
 - `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien
   und Setup-Script.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.

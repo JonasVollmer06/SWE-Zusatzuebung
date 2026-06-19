@@ -191,3 +191,14 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Suchparameter und `count-only`.
 - Ergebnis: `go test ./internal/integration -count=1 -v` und `go test ./...`
   sind erfolgreich.
+- Nutzerrequest: Bruno fuer den Read-Teil erstellen und sich dabei am alten
+  Hono-Projekt orientieren.
+- KI-Antwort/Entscheidung: Die Bruno-Collection wurde unter
+  `extras/bruno/fussballer` im gleichen Aufbau wie im alten Projekt angelegt:
+  `opencollection.yml`, `REST/folder.yml`, `REST/Suche mit ID` und
+  `REST/Suche mit Suchparameter`. Die Requests nutzen `{{baseUrl}}` mit
+  `http://localhost:8080` und `{{restUrl}}/fussballer`.
+- Ergebnis: Bruno-Requests fuer vorhandene und fehlende IDs, ETag/
+  `If-None-Match`, Listenabruf, Paging, Suche nach `nachname`, `nationalitaet`,
+  `position`, ungueltige Suchparameter und `count-only` wurden angelegt.
+  Die hinterlegten Endpunkte wurden per HTTP-Smoke-Test erfolgreich geprueft.
