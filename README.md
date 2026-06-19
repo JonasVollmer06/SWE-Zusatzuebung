@@ -120,3 +120,13 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `cmd/server/main.go` beim Start aufgerufen.
 - Ergebnis: `go test ./...` ist erfolgreich; ein kurzer Smoke-Test von `/health`
   war ebenfalls erfolgreich.
+- Nutzerrequest: PostgreSQL-Setup soll per Script fuer dieses Projekt neu aufgebaut
+  werden, aber mit den alten Volume-Namen `pg_data`, `pg_tablespace` und `pg_init`.
+- KI-Antwort/Entscheidung: `extras/compose/postgres/setup.ps1` wurde angelegt.
+  Das Script erstellt/prueft die alten Docker-Volumes, kopiert die Init-Dateien aus
+  diesem Projekt in `pg_init`, bereitet den Tablespace vor, startet bei leerem
+  `pg_data` einmal ohne TLS und danach normal mit TLS. Die SQL-Initialisierung wird
+  nur ausgefuehrt, wenn die Datenbank `fussballer` noch nicht existiert.
+- Ergebnis: `setup.ps1` wurde erfolgreich ausgefuehrt. Es erkannte die vorhandene
+  Datenbank, uebersprang die SQL-Neuanlage und pruefte `select count(*) from
+  fussballer.fussballer;` mit Ergebnis 7. `go test ./...` ist erfolgreich.

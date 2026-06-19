@@ -30,6 +30,8 @@ kann.
   `CreateFussballerRequest` wurden angelegt.
 - PostgreSQL kann jetzt direkt aus diesem Projekt gestartet werden:
   `extras/compose/postgres/compose.yml`.
+- Fuer PostgreSQL gibt es ein projektlokales Setup-Script:
+  `extras/compose/postgres/setup.ps1`.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
@@ -229,6 +231,14 @@ go test ./...
 
 Datenbank starten:
 
+Erstsetup oder reproduzierbares Setup:
+
+```powershell
+.\extras\compose\postgres\setup.ps1
+```
+
+Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
+
 ```powershell
 docker compose -f .\extras\compose\postgres\compose.yml up -d
 ```
@@ -276,8 +286,10 @@ swe_zusatzuebung/
     compose/
       postgres/
         compose.yml
+        compose.notls.yml
         password.txt
         ReadMe.md
+        setup.ps1
         init/
   internal/
     config/
@@ -304,7 +316,8 @@ swe_zusatzuebung/
 ### Bedeutung der Ordner
 
 - `cmd/server`: Einstiegspunkt der Anwendung. Hier startet der HTTP-Server.
-- `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien.
+- `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien
+  und Setup-Script.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.
 - `internal/database`: Aufbau und Pruefung der PostgreSQL-Verbindung.
 - `internal/server`: Allgemeiner HTTP-Router, Health Check und Startbanner.
@@ -452,6 +465,7 @@ go test ./...
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
+- PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Repository fuer `GET /fussballer/{id}` implementieren.
 - Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.

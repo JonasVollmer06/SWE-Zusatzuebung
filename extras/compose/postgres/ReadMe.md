@@ -10,6 +10,41 @@ werden kann.
 
 ## Starten
 
+### Erstsetup oder reproduzierbares Setup
+
+Das empfohlene Setup fuer dieses Projekt ist:
+
+```powershell
+.\setup.ps1
+```
+
+Das Script orientiert sich an der PostgreSQL-ReadMe aus dem vorherigen Projekt
+und verwendet bewusst dieselben alten Docker-Volume-Namen:
+
+```text
+pg_data
+pg_tablespace
+pg_init
+```
+
+Es fuehrt aus:
+
+- Docker Volumes anlegen, falls sie noch fehlen.
+- Projektlokalen Ordner `init` in das Volume `pg_init` kopieren.
+- Tablespace-Ordner `/tablespace/fussballer` vorbereiten.
+- Bei leerem `pg_data` PostgreSQL einmal ohne TLS starten, damit das Datenverzeichnis
+  initialisiert wird.
+- TLS-Zertifikate nach `/var/lib/postgresql/18/data` kopieren.
+- PostgreSQL normal mit TLS starten.
+- SQL-Initialisierung ausfuehren, falls die Datenbank `fussballer` noch nicht existiert.
+- Datensaetze in `fussballer.fussballer` zaehlen.
+
+Wenn die Datenbank bereits existiert, wird die SQL-Initialisierung uebersprungen.
+Dadurch kann das Script auch auf einem bereits vorbereiteten Rechner erneut
+ausgefuehrt werden.
+
+### Normaler Start
+
 Aus diesem Ordner:
 
 ```powershell
@@ -99,6 +134,8 @@ docker volume create pg_tablespace
 docker volume create pg_init
 ```
 
+Das uebernimmt normalerweise `setup.ps1`.
+
 Der Ordner `init` enthaelt die SQL-, CSV- und TLS-Dateien, die aus dem alten
-Projekt uebernommen wurden. Bei einem bereits eingerichteten Rechner sind diese
-Daten normalerweise schon im Volume `pg_init` vorhanden.
+Projekt uebernommen wurden. `setup.ps1` kopiert diese projektlokalen Dateien in
+das Volume `pg_init`.
