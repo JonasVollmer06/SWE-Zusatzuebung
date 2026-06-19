@@ -95,3 +95,12 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 - KI-Antwort/Entscheidung: Fuer den naechsten fachlichen Schritt wurde der
   Feature-Branch `codex-fussballer-read-api` angelegt. Die Git-Arbeitsweise wurde
   in `README-Projekt.md` dokumentiert.
+- Zusatzinput: Vorlesungsmitschrieb `erklaerung.txt` bestaetigt REST-Schnittstelle
+  mit DB-Zugriff, Nutzung des bestehenden DB-Servers, Git-Repository, laufenden
+  Docker-Betrieb und Dokumentation der KI-Requests in der Abgabe-ReadMe.
+- Nutzerrequest: Sinnvolle `.gitignore` hinzufuegen und langsam mit dem Serveraufbau
+  weitermachen; Frage, ob zuerst die Models sinnvoll sind.
+- KI-Antwort/Entscheidung: Ja, zuerst schlanke Models, weil sie die gemeinsame
+  Datenstruktur fuer Repository, Service und Router bilden. Angelegt wurden
+  `.gitignore`, `internal/fussballer/model.go` und ein erster Test
+  `internal/fussballer/model_test.go` fuer gueltige Positionswerte.

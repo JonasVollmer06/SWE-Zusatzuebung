@@ -24,6 +24,10 @@ kann.
   `fussballer.fussballer`.
 - Der Go-Server baut beim Start eine PostgreSQL-Verbindung auf und prueft sie mit
   einem Ping.
+- `.gitignore` wurde fuer Go, lokale Umgebungsdateien, Logs und Editor-Dateien
+  angelegt.
+- Erste Models fuer `Fussballer`, `Adresse`, `Auszeichnung`, `Position` und
+  `CreateFussballerRequest` wurden angelegt.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -166,6 +170,20 @@ Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\extras\comp
 Get-Content -Raw -LiteralPath C:\Users\jv10s\SWE\Projekte\fussballer\.env
 ```
 
+Zusaetzlicher Vorlesungsmitschrieb wurde gelesen:
+
+```powershell
+Get-Content -Raw -LiteralPath C:\Users\jv10s\Desktop\SWE\erklaerung.txt
+```
+
+Kernaussagen daraus:
+
+- REST-Schnittstelle mit Datenbankzugriff ist gefordert.
+- Der DB-Server aus den vorherigen Abgaben soll verwendet werden.
+- Git-Repository soll eingerichtet und genutzt werden.
+- Docker soll vernuenftig laufen.
+- Die Abgabe-ReadMe soll KI-Werkzeug und Requests dokumentieren.
+
 ## Setup-Befehle
 
 Ausgefuehrt:
@@ -233,6 +251,7 @@ swe_zusatzuebung/
       router_test.go
     fussballer/
       model.go
+      model_test.go
       repository.go
       service.go
       router.go
@@ -254,6 +273,7 @@ swe_zusatzuebung/
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
 - `router.go`: REST-Routen und HTTP-Handler.
 - `model.go`: Datenstrukturen fuer Fussballer, Adresse und Auszeichnungen.
+- `model_test.go`: Erste Tests fuer fachliche Konstanten, aktuell Positionswerte.
 - `validation.go`: Regeln fuer neue Fussballer.
 
 ## Datenbankgrundlage
@@ -279,6 +299,15 @@ Wichtige Felder der Tabelle `fussballer`:
 - `username`
 - `erzeugt`
 - `aktualisiert`
+
+Aktuell angelegte Go-Models:
+
+- `Fussballer`
+- `Adresse`
+- `Auszeichnung`
+- `Position`
+- `CreateFussballerRequest`
+- `CreateAdresseRequest`
 
 Erlaubte Werte fuer `position`:
 
@@ -381,5 +410,7 @@ go test ./...
 ## Offene Punkte
 
 - DB-Verbindung ist grundlegend konfiguriert.
-- Repository, Service und Router fuer `fussballer` implementieren.
+- Repository fuer `GET /fussballer/{id}` implementieren.
+- Service fuer `GET /fussballer/{id}` implementieren.
+- Router fuer `GET /fussballer/{id}` implementieren.
 - Tests ergaenzen.
