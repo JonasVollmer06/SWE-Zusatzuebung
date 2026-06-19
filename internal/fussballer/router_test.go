@@ -1,6 +1,7 @@
 package fussballer
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 )
 
 type fakeReader struct {
@@ -38,6 +40,18 @@ func (r fakeReader) Count(ctx context.Context, criteria SearchCriteria) (int, er
 	}
 
 	return r.countFunc(ctx, criteria)
+}
+
+type fakeWriter struct {
+	createFunc func(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+}
+
+func (w fakeWriter) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
+	if w.createFunc == nil {
+		return nil, errors.New("unexpected Create call")
+	}
+
+	return w.createFunc(ctx, request)
 }
 
 func TestRouterFindByID(t *testing.T) {
@@ -182,6 +196,123 @@ func TestRouterRejectsInvalidPosition(t *testing.T) {
 	router := NewRouter(fakeReader{})
 
 	request := httptest.NewRequest(http.MethodGet, "/?position=TRAINER", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+}
+
+func TestRouterCreate(t *testing.T) {
+	birthDate := time.Date(2004, time.November, 24, 0, 0, 0, 0, time.UTC)
+	expectedRequest := CreateFussballerRequest{
+		Nachname:      "Ulm",
+		Nationalitaet: "Irland",
+		Position:      PositionTorwart,
+		Geburtsdatum:  birthDate,
+		Username:      "mark",
+		Adresse: &CreateAdresseRequest{
+			PLZ:        "76131",
+			Ort:        "Karlsruhe",
+			Bundesland: "Baden-Wuerttemberg",
+		},
+	}
+	created := &Fussballer{
+		ID:            1001,
+		Version:       0,
+		Nachname:      "Ulm",
+		Nationalitaet: "Irland",
+		Position:      &[]Position{PositionTorwart}[0],
+		Geburtsdatum:  birthDate,
+		Username:      "mark",
+	}
+
+	router := NewRouter(fakeReader{}, fakeWriter{
+		createFunc: func(_ context.Context, request CreateFussballerRequest) (*Fussballer, error) {
+			if !reflect.DeepEqual(request, expectedRequest) {
+				t.Fatalf("expected request %+v, got %+v", expectedRequest, request)
+			}
+
+			return created, nil
+		},
+	})
+
+	body := `{
+		"nachname": "Ulm",
+		"nationalitaet": "Irland",
+		"position": "TORWART",
+		"geburtsdatum": "2004-11-24T00:00:00Z",
+		"username": "mark",
+		"adresse": {
+			"plz": "76131",
+			"ort": "Karlsruhe",
+			"bundesland": "Baden-Wuerttemberg"
+		}
+	}`
+	request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusCreated {
+		t.Fatalf("expected status %d, got %d", http.StatusCreated, response.Code)
+	}
+	if response.Header().Get("Location") != "/fussballer/1001" {
+		t.Fatalf("expected Location %q, got %q", "/fussballer/1001", response.Header().Get("Location"))
+	}
+	if response.Header().Get("ETag") != `"0"` {
+		t.Fatalf("expected ETag %q, got %q", `"0"`, response.Header().Get("ETag"))
+	}
+
+	var player Fussballer
+	if err := json.NewDecoder(response.Body).Decode(&player); err != nil {
+		t.Fatalf("expected JSON body, got %v", err)
+	}
+	if player.ID != created.ID || player.Nachname != created.Nachname {
+		t.Fatalf("unexpected player response: %+v", player)
+	}
+}
+
+func TestRouterCreateRejectsInvalidJSON(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(`{"nachname":`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+}
+
+func TestRouterCreateRejectsUnsupportedMediaType(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(`{}`))
+	request.Header.Set("Content-Type", "text/plain")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusUnsupportedMediaType {
+		t.Fatalf("expected status %d, got %d", http.StatusUnsupportedMediaType, response.Code)
+	}
+}
+
+func TestRouterCreateReturnsValidationError(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		createFunc: func(_ context.Context, _ CreateFussballerRequest) (*Fussballer, error) {
+			return nil, ErrValidation
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(`{"nachname":"Ulm"}`))
+	request.Header.Set("Content-Type", "application/json")
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)

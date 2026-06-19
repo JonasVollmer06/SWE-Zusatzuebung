@@ -18,6 +18,10 @@ type Reader interface {
 	Count(ctx context.Context, criteria SearchCriteria) (int, error)
 }
 
+type Writer interface {
+	Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+}
+
 type Page struct {
 	Content []Fussballer `json:"content"`
 	Page    PageMetadata `json:"page"`
@@ -30,18 +34,26 @@ type PageMetadata struct {
 	TotalPages    int `json:"totalPages"`
 }
 
-func NewRouter(service Reader) http.Handler {
+func NewRouter(reader Reader, writers ...Writer) http.Handler {
 	router := chi.NewRouter()
-	handler := routerHandler{service: service}
+	handler := routerHandler{reader: reader}
+
+	if len(writers) > 0 {
+		handler.writer = writers[0]
+	}
 
 	router.Get("/", handler.find)
 	router.Get("/{id}", handler.findByID)
+	if handler.writer != nil {
+		router.Post("/", handler.create)
+	}
 
 	return router
 }
 
 type routerHandler struct {
-	service Reader
+	reader Reader
+	writer Writer
 }
 
 func (h routerHandler) findByID(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +68,7 @@ func (h routerHandler) findByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player, err := h.service.FindByID(r.Context(), id)
+	player, err := h.reader.FindByID(r.Context(), id)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -85,7 +97,7 @@ func (h routerHandler) find(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := r.URL.Query()["count-only"]; ok {
-		count, err := h.service.Count(r.Context(), criteria)
+		count, err := h.reader.Count(r.Context(), criteria)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -96,13 +108,44 @@ func (h routerHandler) find(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageable := parsePageable(r)
-	slice, err := h.service.Find(r.Context(), criteria, pageable)
+	slice, err := h.reader.Find(r.Context(), criteria, pageable)
 	if err != nil {
 		writeError(w, err)
 		return
 	}
 
 	writeJSON(w, http.StatusOK, createPage(slice, pageable))
+}
+
+func (h routerHandler) create(w http.ResponseWriter, r *http.Request) {
+	if !acceptsJSON(r) {
+		w.WriteHeader(http.StatusNotAcceptable)
+		return
+	}
+
+	if !isJSONContent(r) {
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+
+	var request CreateFussballerRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	player, err := h.writer.Create(r.Context(), request)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Header().Set("Location", "/fussballer/"+strconv.Itoa(player.ID))
+	w.Header().Set("ETag", `"`+strconv.Itoa(player.Version)+`"`)
+	writeJSON(w, http.StatusCreated, player)
 }
 
 func parseSearchCriteria(r *http.Request) (SearchCriteria, error) {
@@ -166,6 +209,11 @@ func acceptsJSON(r *http.Request) bool {
 	return accept == "" || accept == "*/*" || strings.Contains(accept, "json") || strings.Contains(accept, "html")
 }
 
+func isJSONContent(r *http.Request) bool {
+	contentType := strings.ToLower(r.Header.Get("Content-Type"))
+	return strings.Contains(contentType, "application/json")
+}
+
 func writeJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -177,7 +225,7 @@ func writeError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, ErrNotFound), errors.Is(err, ErrInvalidID):
 		w.WriteHeader(http.StatusNotFound)
-	case errors.Is(err, ErrInvalidSearchParameter):
+	case errors.Is(err, ErrInvalidSearchParameter), errors.Is(err, ErrValidation):
 		w.WriteHeader(http.StatusBadRequest)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)

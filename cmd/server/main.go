@@ -27,7 +27,8 @@ func main() {
 
 	fussballerRepository := fussballer.NewRepository(dbpool)
 	fussballerReadService := fussballer.NewReadService(fussballerRepository)
-	fussballerRouter := fussballer.NewRouter(fussballerReadService)
+	fussballerWriteService := fussballer.NewWriteService(fussballerRepository)
+	fussballerRouter := fussballer.NewRouter(fussballerReadService, fussballerWriteService)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 

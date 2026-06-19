@@ -174,6 +174,56 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Slice mit `content` und `totalElements`.
 - Ergebnis: Service-Tests mit Fake-Repository wurden ergaenzt; `go test ./...`
   ist erfolgreich.
+- Nutzerrequest: Aktuellen Stand von `main` holen und danach schrittweise die
+  Write-Komponenten bauen. Zuerst soll nur das Repository fuer Schreibzugriff
+  ergaenzt werden. Integrationstests und Bruno-Requests sollen auf die TODO-Liste.
+- KI-Antwort/Entscheidung: `main` wurde per Fast-Forward auf `origin/main`
+  aktualisiert und ein neuer Branch `codex-write-repository` erstellt.
+  `Repository.Create(...)` wurde in `internal/fussballer/repository.go`
+  implementiert. Die Methode arbeitet mit einer Transaktion, fuegt zuerst einen
+  Datensatz in `fussballer.fussballer` ein und legt optional eine Adresse in
+  `fussballer.adresse` an.
+- Ergebnis: `scripts/check.ps1` ist erfolgreich. TODOs fuer Write-Service,
+  Write-Router, Integrationstests und Bruno-Collection wurden in
+  `README-Projekt.md` ergaenzt.
+- Nutzerrequest: Write-Service mit Validierung und Unit-Tests bauen, orientiert am
+  Read-Service. Fuer diesen Schritt soll ein neuer Branch ohne KI-Hinweis im Namen
+  verwendet werden.
+- KI-Antwort/Entscheidung: Neuer Branch `write-service-validation` wurde erstellt.
+  `internal/fussballer/write_service.go` implementiert `WriteService.Create(...)`
+  ueber einem `WriteRepository`. Fuer Pflichtfelder wird `validator` genutzt,
+  zusaetzlich wird die `Position` fachlich geprueft und String-Felder werden per
+  `strings.TrimSpace` normalisiert.
+- Ergebnis: Unit-Tests in `internal/fussballer/write_service_test.go` pruefen
+  erfolgreichen Create-Aufruf, fehlende Pflichtfelder, ungueltige Position,
+  ungueltige Adresse und Weitergabe von Repository-Fehlern. `scripts/check.ps1`
+  ist erfolgreich.
+- Nutzerrequest: Die laufende DB soll beim DB-Start wieder auf den Stand der CSV-
+  Dateien zurueckgesetzt werden, wie im alten Projekt mit DB-Populate.
+- KI-Antwort/Entscheidung: `drop-table.sql` wurde in
+  `extras/compose/postgres/init/fussballer/sql` uebernommen. `setup.ps1` legt die
+  Datenbank nur bei Bedarf an, setzt die Tabellen aber bei jedem Lauf mit
+  `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den CSV-Stand
+  zurueck.
+- Nutzerrequest: PostgreSQL-Skripte sauber aufteilen, weil Volume-Erstellung und
+  Init-Dateien-Kopieren nur einmalige Setup-Schritte sind, waehrend Start und
+  DB-Reset getrennte Aufgaben sein sollen.
+- KI-Antwort/Entscheidung: Die gemeinsame Logik wurde nach
+  `postgres-tools.ps1` ausgelagert. `setup.ps1` macht nun nur noch einmalige
+  Einrichtung und DB-Anlage, `start.ps1` startet PostgreSQL ohne Datenveraenderung,
+  und `reset-db.ps1` setzt die Tabellen auf CSV-Stand zurueck.
+- Nutzerrequest: Write-Router passend zum Read-Router mit chi und passend zum
+  Write-Service bauen. TODOs bleiben Integrationstest Write, Write-Router und
+  Bruno; umgesetzt werden soll jetzt der Write-Router.
+- KI-Antwort/Entscheidung: Neuer Branch `write-router` wurde erstellt.
+  `internal/fussballer/router.go` wurde erweitert: `NewRouter` akzeptiert neben
+  dem Reader optional einen Writer. `POST /fussballer` liest JSON, prueft
+  `Content-Type`, reicht an `WriteService.Create(...)` weiter und antwortet bei
+  Erfolg mit `201 Created`, `Location` und `ETag`.
+- Ergebnis: Router-Unit-Tests fuer erfolgreichen POST, ungueltiges JSON, falschen
+  Content-Type und Validierungsfehler wurden ergaenzt. `scripts/check.ps1` ist
+  erfolgreich. Ein Smoke-Test mit echtem Server und PostgreSQL war erfolgreich;
+  danach wurde die DB wieder mit `reset-db.ps1` auf CSV-Stand gesetzt.
 - Nutzerrequest: Integrationstests fuer die lesenden REST-Endpunkte schreiben,
   orientiert an den Integrationstests aus dem alten Hono-Projekt.
 - KI-Antwort/Entscheidung: Es wurden Integrationstests in
