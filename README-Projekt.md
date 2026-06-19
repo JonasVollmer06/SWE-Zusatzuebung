@@ -190,6 +190,32 @@ Tests ausfuehren:
 go test ./...
 ```
 
+## Git-Arbeitsweise
+
+Wir arbeiten nicht dauerhaft direkt auf `main`, sondern nutzen Feature-Branches
+fuer zusammenhaengende Schritte.
+
+Aktueller Feature-Branch:
+
+```text
+codex-fussballer-read-api
+```
+
+Grundregel:
+
+- Kleine, sinnvolle Commits nach stabilen Zwischenschritten.
+- Vor einem Commit sollten Tests laufen: `go test ./...`.
+- Push nach GitHub kann manuell erfolgen.
+
+Nuetzliche Git-Befehle:
+
+```powershell
+git status
+git add .
+git commit -m "Kurze Beschreibung"
+git push -u origin codex-fussballer-read-api
+```
+
 ## Geplante Projektstruktur
 
 ```text

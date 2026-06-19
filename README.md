@@ -89,3 +89,9 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `pgxpool`, liest `DATABASE_URL` aus der Umgebung oder verwendet lokal
   `postgres://fussballer:p@localhost:5432/fussballer?sslmode=disable` und prueft
   die Verbindung beim Start mit einem Ping. `go test ./...` ist erfolgreich.
+- Zusatzrequest: Git soll als fester Teil des Projekts genutzt werden:
+  passende Branches, kleine sinnvolle Commits und Push optional manuell durch den
+  Nutzer.
+- KI-Antwort/Entscheidung: Fuer den naechsten fachlichen Schritt wurde der
+  Feature-Branch `codex-fussballer-read-api` angelegt. Die Git-Arbeitsweise wurde
+  in `README-Projekt.md` dokumentiert.
