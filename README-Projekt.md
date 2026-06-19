@@ -47,6 +47,11 @@ kann.
   `internal/fussballer/write_service.go`.
 - Read-Service, Read-Router und Write-Router sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
+- Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
+  `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
+  und `internal/integration/helpers_test.go`.
+- Bruno-Collection fuer die lesenden REST-Endpunkte ist angelegt:
+  `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -340,6 +345,12 @@ swe_zusatzuebung/
     workflows/
       ci.yml
   extras/
+    bruno/
+      fussballer/
+        opencollection.yml
+        REST/
+          Suche mit ID/
+          Suche mit Suchparameter/
     compose/
       postgres/
         compose.yml
@@ -384,6 +395,7 @@ swe_zusatzuebung/
 ### Bedeutung der Ordner
 
 - `cmd/server`: Einstiegspunkt der Anwendung. Hier startet der HTTP-Server.
+- `extras/bruno/fussballer`: Bruno-Collection fuer manuelle REST-Requests.
 - `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien
   und Setup-Script.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.
@@ -540,9 +552,6 @@ Aktuell kann der Server:
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
 - ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
   beantworten.
-- einen Health-Endpunkt anbieten.
-- im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
-- im Read-Service IDs, Suchparameter und Pagination fuer den Lesezugriff pruefen.
 
 Am Ende soll der Server zusaetzlich:
 
@@ -558,8 +567,8 @@ Am Ende soll der Server zusaetzlich:
 Geplant:
 
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
-- Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
-- Integrationstests fuer komplette REST-Ablaeufe gegen eine laufende Testdatenbank.
+- Integrationstests gegen eine laufende PostgreSQL-Datenbank; falls PostgreSQL nicht
+  erreichbar ist, werden diese Tests uebersprungen.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -580,5 +589,3 @@ go test ./...
 - PostgreSQL-Setup, Start und DB-Reset sind in eigene Skripte aufgeteilt.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
-- Integrationstests ergaenzen.
-- Bruno-Collection fuer REST-Requests ergaenzen.
