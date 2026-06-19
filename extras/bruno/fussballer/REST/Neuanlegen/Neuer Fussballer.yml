@@ -1,0 +1,61 @@
+info:
+  name: Neuer Fussballer
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    mode: json
+    json: |-
+      {
+        "nachname": "Musiala",
+        "nationalitaet": "Deutschland",
+        "position": "MITTELFELDSPIELER",
+        "geburtsdatum": "2003-02-26T00:00:00Z",
+        "username": "bruno-create",
+        "adresse": {
+          "plz": "80331",
+          "ort": "Muenchen",
+          "bundesland": "Bayern"
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test('Body: neu angelegter Fussballer', () => {
+          const fussballer = res.getBody();
+          expect(fussballer.id).to.be.above(0);
+          expect(fussballer.nachname).to.be.equal('Musiala');
+          expect(fussballer.username).to.be.equal('bruno-create');
+          expect(fussballer.position).to.be.equal('MITTELFELDSPIELER');
+          expect(fussballer.adresse.ort).to.be.equal('Muenchen');
+        });
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json(; charset=utf-8)?$
+    - expression: res.headers.location
+      operator: matches
+      value: ^\/fussballer\/[0-9]+$
+    - expression: res.headers.etag
+      operator: eq
+      value: "\"0\""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -276,3 +276,15 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `GET /fussballer/{id}` sowie Fehlerfaelle fuer ungueltiges JSON, fehlende
   Pflichtfelder, ungueltige Position, falschen Content-Type und unbekannte
   JSON-Felder. `scripts/check.ps1` ist erfolgreich.
+- Nutzerrequest: Als letzter Schritt sollen Write-Requests fuer Bruno im Projekt
+  ergaenzt werden. Read-Requests existieren bereits, es fehlt der Client-Teil
+  fuer das Neuanlegen.
+- KI-Antwort/Entscheidung: In der bestehenden Bruno-Collection wurde analog zu
+  den Read-Ordnern der Ordner `REST/Neuanlegen` angelegt. Die Requests nutzen
+  weiterhin `{{restUrl}}`, `Accept: application/json` und fuer POST
+  `Content-Type: application/json`.
+- Ergebnis: Bruno-Requests fuer erfolgreiches `POST /fussballer`, ungueltiges
+  JSON, fehlende Pflichtfelder, ungueltige Position, falschen Content-Type und
+  unbekannte JSON-Felder wurden ergaenzt. Die technische README dokumentiert den
+  neuen Bruno-Ordner und den Hinweis, vor mehrfachen erfolgreichen POST-Tests bei
+  Bedarf `reset-db.ps1` auszufuehren.

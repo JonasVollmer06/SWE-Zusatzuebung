@@ -1,0 +1,32 @@
+info:
+  name: Falscher Content-Type
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: text/plain
+  body:
+    mode: text
+    text: |-
+      {
+        "nachname": "Musiala"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "415"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

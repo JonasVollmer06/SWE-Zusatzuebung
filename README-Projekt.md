@@ -52,7 +52,7 @@ kann.
   und `internal/integration/helpers_test.go`.
 - Integrationstests fuer `POST /fussballer` sind implementiert:
   `internal/integration/post_create_test.go`.
-- Bruno-Collection fuer die lesenden REST-Endpunkte ist angelegt:
+- Bruno-Collection fuer die lesenden und schreibenden REST-Endpunkte ist angelegt:
   `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
@@ -300,6 +300,18 @@ Hinweis: `reset-db.ps1` startet PostgreSQL und laedt die Tabellen neu aus den
 CSV-Dateien. Dadurch werden Daten, die durch manuelle REST-Requests entstanden
 sind, wieder auf den Ausgangsstand zurueckgesetzt.
 
+Bruno-Requests:
+
+- `extras/bruno/fussballer/REST/Suche mit ID`: Beispiele fuer `GET /fussballer/{id}`.
+- `extras/bruno/fussballer/REST/Suche mit Suchparameter`: Beispiele fuer
+  `GET /fussballer` mit Query-Parametern.
+- `extras/bruno/fussballer/REST/Neuanlegen`: Beispiele fuer `POST /fussballer`,
+  inklusive erfolgreichem Anlegen und Validierungsfehlern.
+
+Hinweis: Der erfolgreiche Bruno-POST nutzt den Username `bruno-create`. Wenn der
+Request mehrfach ausgefuehrt wird, sollte vorher `reset-db.ps1` laufen, damit die
+Datenbank wieder auf dem CSV-Ausgangsstand ist.
+
 Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
 
 ```powershell
@@ -353,6 +365,7 @@ swe_zusatzuebung/
       fussballer/
         opencollection.yml
         REST/
+          Neuanlegen/
           Suche mit ID/
           Suche mit Suchparameter/
     compose/
@@ -574,7 +587,6 @@ Aktuell kann der Server:
 
 Am Ende soll der Server zusaetzlich:
 
-- Bruno-Requests fuer den Write-Teil enthalten.
 - optional Keycloak/OIDC ergaenzen, falls nach dem REST-Kern noch Zeit bleibt.
 
 ## Teststrategie
@@ -607,4 +619,5 @@ go test ./...
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
 - Write-Integrationstests sind eingerichtet und getestet.
-- Offen: Bruno-Requests fuer `POST /fussballer` ergaenzen.
+- Bruno-Requests fuer `POST /fussballer` sind eingerichtet.
+- Offen: optional Keycloak/OIDC ergaenzen.
