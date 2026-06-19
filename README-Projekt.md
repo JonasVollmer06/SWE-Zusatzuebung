@@ -35,6 +35,8 @@ kann.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Formatierung, Linting und Gesamtcheck sind ueber PowerShell-Skripte im Ordner
   `scripts` verfuegbar.
+- GitHub Actions CI ist eingerichtet und prueft bei Push und Pull Request
+  Formatierung, `go vet` und Tests.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -237,6 +239,12 @@ Formatierung ausfuehren:
 .\scripts\format.ps1
 ```
 
+Formatierung nur pruefen:
+
+```powershell
+.\scripts\format-check.ps1
+```
+
 Linting ausfuehren:
 
 ```powershell
@@ -302,6 +310,9 @@ swe_zusatzuebung/
   cmd/
     server/
       main.go
+  .github/
+    workflows/
+      ci.yml
   extras/
     compose/
       postgres/
@@ -329,6 +340,7 @@ swe_zusatzuebung/
       validation.go
   scripts/
     check.ps1
+    format-check.ps1
     format.ps1
     go-tools.ps1
     lint.ps1
@@ -348,6 +360,7 @@ swe_zusatzuebung/
 - `internal/server`: Allgemeiner HTTP-Router, Health Check und Startbanner.
 - `internal/fussballer`: Fachlogik fuer Fussballer.
 - `scripts`: Hilfsskripte fuer Formatierung, Linting und Gesamtcheck.
+- `.github/workflows/ci.yml`: GitHub Actions Workflow fuer Pushes und Pull Requests.
 - `repository.go`: Datenbankzugriff.
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
 - `router.go`: REST-Routen und HTTP-Handler.
@@ -482,6 +495,7 @@ Geplant:
 - Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
+- CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
 
 Spaetere Testbefehle:
 
@@ -496,6 +510,7 @@ go test ./...
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
+- GitHub Actions CI ist eingerichtet.
 - Repository fuer `GET /fussballer/{id}` implementieren.
 - Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.

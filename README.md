@@ -137,3 +137,12 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `scripts/go-tools.ps1` angelegt.
 - Ergebnis: PowerShell-Syntaxcheck, Formatierung, Linting und Gesamtcheck mit Tests
   wurden erfolgreich ausgefuehrt.
+- Nutzerrequest: GitHub Actions einbauen, sodass bei Pushes Tests, Linter und
+  Formatierer ausgefuehrt werden.
+- KI-Antwort/Entscheidung: Ein einfacher Workflow `.github/workflows/ci.yml` wurde
+  angelegt. Er nutzt `actions/checkout`, `actions/setup-go` mit `go.mod`,
+  `go mod download`, einen `gofmt`-Formatcheck, `go vet ./...` und `go test ./...`.
+  Lokal wurde zusaetzlich `scripts/format-check.ps1` ergaenzt und in
+  `scripts/check.ps1` eingebunden.
+- Ergebnis: PowerShell-Syntaxcheck und `scripts/check.ps1` wurden lokal erfolgreich
+  ausgefuehrt.
