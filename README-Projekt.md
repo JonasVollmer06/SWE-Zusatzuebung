@@ -41,8 +41,8 @@ kann.
   `internal/fussballer/repository.go`.
 - Read-Service und Router fuer den Lesezugriff sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
-- Read-Service fuer den Lesezugriff ist implementiert:
-  `internal/fussballer/service.go`.
+- Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
+  `internal/integration/read_api_test.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -488,9 +488,6 @@ Aktuell kann der Server:
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
 - ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
   beantworten.
-- einen Health-Endpunkt anbieten.
-- im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
-- im Read-Service IDs, Suchparameter und Pagination fuer den Lesezugriff pruefen.
 
 Am Ende soll der Server zusaetzlich:
 
@@ -506,7 +503,8 @@ Am Ende soll der Server zusaetzlich:
 Geplant:
 
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
-- Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
+- Integrationstests gegen eine laufende PostgreSQL-Datenbank; falls PostgreSQL nicht
+  erreichbar ist, werden diese Tests uebersprungen.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -527,7 +525,3 @@ go test ./...
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
-- Repository fuer `GET /fussballer/{id}` implementieren.
-- Service fuer `GET /fussballer/{id}` implementieren.
-- Router fuer `GET /fussballer/{id}` implementieren.
-- Tests ergaenzen.

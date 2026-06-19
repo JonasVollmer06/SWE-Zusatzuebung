@@ -165,6 +165,7 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `page` und `size` sowie `count-only`.
 - Ergebnis: `cmd/server/main.go` verdrahtet nun Repository, Read-Service und
   Fussballer-Router. Router- und Service-Tests wurden ergaenzt; `go test ./...`
+  ist erfolgreich.
 - Nutzerrequest: Orientierung am alten Hono-Projekt und Umsetzung eines
   Read-Service fuer den Lesezugriff, inklusive Tests falls sinnvoll.
 - KI-Antwort/Entscheidung: Der Read-Service wurde in Go als Schicht ueber dem
@@ -173,3 +174,14 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Slice mit `content` und `totalElements`.
 - Ergebnis: Service-Tests mit Fake-Repository wurden ergaenzt; `go test ./...`
   ist erfolgreich.
+- Nutzerrequest: Integrationstests fuer die lesenden REST-Endpunkte schreiben,
+  orientiert an den Integrationstests aus dem alten Hono-Projekt.
+- KI-Antwort/Entscheidung: Es wurden Integrationstests in
+  `internal/integration/read_api_test.go` angelegt. Sie starten keinen externen
+  HTTP-Server, sondern bauen mit `httptest` die echte Kette aus PostgreSQL-Pool,
+  Repository, Read-Service, Fussballer-Router und Server-Router auf. Getestet
+  werden vorhandene und fehlende IDs, ungueltige IDs, ETag/`If-None-Match`,
+  Listenabruf, Suche nach `nachname`, `nationalitaet`, `position`, ungueltige
+  Suchparameter und `count-only`.
+- Ergebnis: Die Tests laufen gegen die echte PostgreSQL-Datenbank, werden bei
+  fehlender DB sauber uebersprungen, und `go test ./...` ist erfolgreich.
