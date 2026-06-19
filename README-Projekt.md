@@ -47,10 +47,18 @@ kann.
   `internal/fussballer/write_service.go`.
 - Read-Service, Read-Router und Write-Router sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
+- Update-, Delete- und HTTP-Reset-Endpunkt sind implementiert:
+  `PUT /fussballer/{id}`, `DELETE /fussballer/{id}` und `POST /fussballer/reset`.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
   `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
   und `internal/integration/helpers_test.go`.
-- Bruno-Collection fuer die lesenden REST-Endpunkte ist angelegt:
+- Integrationstests fuer `POST /fussballer` sind implementiert:
+  `internal/integration/post_create_test.go`.
+- Integrationstests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
+  sind implementiert: `internal/integration/delete_reset_test.go`.
+- Integrationstests fuer `PUT /fussballer/{id}` sind implementiert:
+  `internal/integration/put_update_test.go`.
+- Bruno-Collection fuer die lesenden und schreibenden REST-Endpunkte ist angelegt:
   `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
@@ -298,6 +306,24 @@ Hinweis: `reset-db.ps1` startet PostgreSQL und laedt die Tabellen neu aus den
 CSV-Dateien. Dadurch werden Daten, die durch manuelle REST-Requests entstanden
 sind, wieder auf den Ausgangsstand zurueckgesetzt.
 
+Bruno-Requests:
+
+- `extras/bruno/fussballer/REST/Suche mit ID`: Beispiele fuer `GET /fussballer/{id}`.
+- `extras/bruno/fussballer/REST/Suche mit Suchparameter`: Beispiele fuer
+  `GET /fussballer` mit Query-Parametern.
+- `extras/bruno/fussballer/REST/Neuanlegen`: Beispiele fuer `POST /fussballer`,
+  inklusive erfolgreichem Anlegen und Validierungsfehlern.
+- `extras/bruno/fussballer/REST/Aktualisieren`: Beispiele fuer
+  `PUT /fussballer/{id}`.
+- `extras/bruno/fussballer/REST/Loeschen`: Beispiele fuer
+  `DELETE /fussballer/{id}`.
+- `extras/bruno/fussballer/REST/Datenbank`: Request fuer
+  `POST /fussballer/reset`.
+
+Hinweis: Der erfolgreiche Bruno-POST nutzt den Username `bruno-create`. Wenn der
+Request mehrfach ausgefuehrt wird, sollte vorher `reset-db.ps1` laufen, damit die
+Datenbank wieder auf dem CSV-Ausgangsstand ist.
+
 Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
 
 ```powershell
@@ -318,7 +344,7 @@ fuer zusammenhaengende Schritte.
 Aktueller Feature-Branch:
 
 ```text
-codex-fussballer-read-api
+write-integration-tests
 ```
 
 Grundregel:
@@ -333,7 +359,7 @@ Nuetzliche Git-Befehle:
 git status
 git add .
 git commit -m "Kurze Beschreibung"
-git push -u origin codex-fussballer-read-api
+git push -u origin write-integration-tests
 ```
 
 ## Geplante Projektstruktur
@@ -351,6 +377,10 @@ swe_zusatzuebung/
       fussballer/
         opencollection.yml
         REST/
+          Aktualisieren/
+          Datenbank/
+          Loeschen/
+          Neuanlegen/
           Suche mit ID/
           Suche mit Suchparameter/
     compose/
@@ -382,6 +412,11 @@ swe_zusatzuebung/
       validation.go
       write_service.go
       write_service_test.go
+    integration/
+      helpers_test.go
+      get_id_test.go
+      get_query_test.go
+      post_create_test.go
   scripts/
     check.ps1
     format-check.ps1
@@ -415,6 +450,8 @@ swe_zusatzuebung/
 - `validation.go`: Regeln fuer neue Fussballer.
 - `write_service.go`: Schreiblogik fuer neue Fussballer inklusive Validierung.
 - `write_service_test.go`: Unit-Tests fuer Write-Service und Validierungsfehler.
+- `internal/integration`: Integrationstests fuer die echte HTTP-Kette mit
+  PostgreSQL.
 
 ## Datenbankgrundlage
 
@@ -546,6 +583,77 @@ Validierung:
 - `username` ist Pflichtfeld.
 - `position` muss einer der erlaubten Enum-Werte sein.
 
+### Fussballer aktualisieren
+
+```http
+PUT /fussballer/{id}
+Content-Type: application/json
+```
+
+Zweck: Einen vorhandenen Fussballer vollstaendig aktualisieren.
+
+Beispiel:
+
+```json
+{
+  "nachname": "Aktualisiert",
+  "nationalitaet": "Deutschland",
+  "position": "STUERMER",
+  "geburtsdatum": "2002-02-02T00:00:00Z",
+  "username": "updated-20",
+  "adresse": {
+    "plz": "76131",
+    "ort": "Karlsruhe",
+    "bundesland": "Baden-Wuerttemberg"
+  }
+}
+```
+
+Erfolgsantwort:
+
+```text
+200 OK
+ETag: "{version}"
+```
+
+Nicht vorhandene oder ungueltige IDs liefern `404 Not Found`. Ungueltige
+Request-Daten liefern `400 Bad Request`.
+
+### Fussballer loeschen
+
+```http
+DELETE /fussballer/{id}
+```
+
+Zweck: Einen Fussballer anhand der ID loeschen.
+
+Erfolgsantwort:
+
+```text
+204 No Content
+```
+
+Nicht vorhandene oder ungueltige IDs liefern `404 Not Found`.
+
+### Datenbank auf CSV-Stand resetten
+
+```http
+POST /fussballer/reset
+```
+
+Zweck: Entwicklungs- und Testhilfe, um die Tabellen `fussballer`, `adresse` und
+`auszeichnung` wieder aus den CSV-Dateien im Projekt zu befuellen.
+
+Antwort:
+
+```json
+{"status":"reset"}
+```
+
+Hinweis: Dieser Endpunkt ist bewusst nur fuer die Zusatzuebung und lokale Tests
+gedacht. In einer echten Produktivanwendung wuerde man so einen Reset-Endpunkt
+nicht frei anbieten.
+
 ## Was der Server koennen soll
 
 Aktuell kann der Server:
@@ -557,17 +665,18 @@ Aktuell kann der Server:
 - Fussballer per ID lesen: `GET /fussballer/{id}`,
 - Fussballer per Query-Parameter suchen: `GET /fussballer`,
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
+- neue Fussballer per JSON anlegen: `POST /fussballer`,
+- vorhandene Fussballer per JSON aktualisieren: `PUT /fussballer/{id}`,
+- Fussballer per ID loeschen: `DELETE /fussballer/{id}`,
+- die Datenbank per HTTP auf CSV-Stand resetten: `POST /fussballer/reset`,
+- Eingaben beim Neuanlegen validieren,
+- Fehler als sinnvolle HTTP-Statuscodes zurueckgeben,
 - ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
   beantworten.
 
 Am Ende soll der Server zusaetzlich:
 
-- Fussballer aus PostgreSQL lesen,
-- Fussballer ueber Query-Parameter suchen,
-- neue Fussballer per JSON anlegen,
-- Eingaben beim Neuanlegen validieren,
-- Fehler als sinnvolle HTTP-Statuscodes zurueckgeben,
-- einfache Tests fuer Router/Handler enthalten.
+- optional Keycloak/OIDC ergaenzen, falls nach dem REST-Kern noch Zeit bleibt.
 
 ## Teststrategie
 
@@ -576,6 +685,12 @@ Geplant:
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
 - Integrationstests gegen eine laufende PostgreSQL-Datenbank; falls PostgreSQL nicht
   erreichbar ist, werden diese Tests uebersprungen.
+- Write-Integrationstests pruefen den echten POST-Weg und lesen den erzeugten
+  Datensatz anschliessend wieder per `GET /fussballer/{id}`.
+- Update-Integrationstests pruefen den echten PUT-Weg und lesen den geaenderten
+  Datensatz anschliessend wieder per `GET /fussballer/{id}`.
+- Delete- und Reset-Integrationstests pruefen das Loeschen echter Datensaetze und
+  das Wiederherstellen des CSV-Ausgangsstands.
 - Formatierung mit `gofmt`.
 - Linting/statische Pruefung mit `go vet`.
 - CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
@@ -596,3 +711,10 @@ go test ./...
 - PostgreSQL-Setup, Start und DB-Reset sind in eigene Skripte aufgeteilt.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
+- Write-Integrationstests sind eingerichtet und getestet.
+- Bruno-Requests fuer `POST /fussballer` sind eingerichtet.
+- Update-, Delete- und Reset-Endpunkte sind eingerichtet und getestet.
+- Bruno-Requests fuer `PUT /fussballer/{id}` sind eingerichtet.
+- Bruno-Requests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
+  sind eingerichtet.
+- Offen: optional Keycloak/OIDC ergaenzen.

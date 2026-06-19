@@ -262,3 +262,56 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `If-None-Match`, Listenabruf, Paging, Suche nach `nachname`, `nationalitaet`,
   `position`, ungueltige Suchparameter und `count-only` wurden angelegt.
   Die hinterlegten Endpunkte wurden per HTTP-Smoke-Test erfolgreich geprueft.
+- Nutzerrequest: Das Projekt soll auf den Stand von `main` gebracht werden.
+  Danach sollen nach dem Schema der Read-Integrationstests passende
+  Write-Integrationstests ergaenzt werden.
+- KI-Antwort/Entscheidung: `main` wurde auf `origin/main` aktualisiert und der
+  Feature-Branch `write-integration-tests` erstellt. Der gemeinsame
+  Integrationstest-Helper baut nun die echte API-Kette aus GORM-Datenbank,
+  Repository, Read-Service, Write-Service, Fussballer-Router und Server-Router
+  auf. Fuer POST-Tests wurde ein JSON-Request-Helper und eine Cleanup-Funktion
+  fuer eindeutige Test-Usernamen ergaenzt.
+- Ergebnis: `internal/integration/post_create_test.go` prueft erfolgreiches
+  `POST /fussballer` inklusive Persistenzpruefung per anschliessendem
+  `GET /fussballer/{id}` sowie Fehlerfaelle fuer ungueltiges JSON, fehlende
+  Pflichtfelder, ungueltige Position, falschen Content-Type und unbekannte
+  JSON-Felder. `scripts/check.ps1` ist erfolgreich.
+- Nutzerrequest: Als letzter Schritt sollen Write-Requests fuer Bruno im Projekt
+  ergaenzt werden. Read-Requests existieren bereits, es fehlt der Client-Teil
+  fuer das Neuanlegen.
+- KI-Antwort/Entscheidung: In der bestehenden Bruno-Collection wurde analog zu
+  den Read-Ordnern der Ordner `REST/Neuanlegen` angelegt. Die Requests nutzen
+  weiterhin `{{restUrl}}`, `Accept: application/json` und fuer POST
+  `Content-Type: application/json`.
+- Ergebnis: Bruno-Requests fuer erfolgreiches `POST /fussballer`, ungueltiges
+  JSON, fehlende Pflichtfelder, ungueltige Position, falschen Content-Type und
+  unbekannte JSON-Felder wurden ergaenzt. Die technische README dokumentiert den
+  neuen Bruno-Ordner und den Hinweis, vor mehrfachen erfolgreichen POST-Tests bei
+  Bedarf `reset-db.ps1` auszufuehren.
+- Nutzerrequest: In Bruno soll es einen Request geben, mit dem die Datenbank
+  resetet wird. Zusaetzlich sollen einfache Delete- und Post-Funktionen im Server
+  ergaenzt und dafuer Bruno, Tests, Repository, Service und Router angepasst
+  werden.
+- KI-Antwort/Entscheidung: `DELETE /fussballer/{id}` wurde als normaler
+  REST-Endpunkt umgesetzt. Fuer den Datenbank-Reset wurde `POST /fussballer/reset`
+  als lokaler Entwicklungs-/Test-Endpunkt umgesetzt. Das Repository nutzt GORM
+  fuer Delete und setzt beim Reset die Tabellen per Transaktion zurueck, liest die
+  CSV-Dateien aus `extras/compose/postgres/init/fussballer/csv` und fuegt die
+  Seed-Daten mit festen IDs wieder ein.
+- Ergebnis: Repository, Write-Service und Router wurden erweitert. Unit-Tests
+  und Integrationstests fuer Delete und Reset wurden ergaenzt. Bruno enthaelt nun
+  die Ordner `REST/Loeschen` und `REST/Datenbank`, inklusive Request
+  `DB auf CSV Stand resetten`. `scripts/check.ps1` ist erfolgreich.
+- Nutzerrequest: Klarstellung, dass mit einfachen Write-Requests neben Delete
+  auch PUT/Update gemeint war. Update soll in Tests, Repository, Bruno, Service,
+  Router und Unit-Tests ergaenzt werden.
+- KI-Antwort/Entscheidung: `PUT /fussballer/{id}` wurde als vollstaendiges
+  Update umgesetzt. Der Request nutzt dieselben fachlichen Felder wie `POST`.
+  Das Repository aktualisiert den Fussballer und die Adresse in einer
+  Transaktion, erhoeht die Version und liefert den aktualisierten Datensatz
+  inklusive Relationen zurueck.
+- Ergebnis: `UpdateFussballerRequest`, Repository-Update, Write-Service-Update
+  und Router-Handler wurden ergaenzt. Unit-Tests und Integrationstests fuer
+  Update wurden hinzugefuegt. Bruno enthaelt nun den Ordner `REST/Aktualisieren`
+  mit erfolgreichem PUT, NotFound-Fall und ungueltiger Position. `scripts/check.ps1`
+  ist erfolgreich.

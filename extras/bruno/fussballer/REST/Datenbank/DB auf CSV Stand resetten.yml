@@ -1,0 +1,30 @@
+info:
+  name: DB auf CSV Stand resetten
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{restUrl}}/reset"
+  headers:
+    - name: Accept
+      value: application/json
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json(; charset=utf-8)?$
+    - expression: res.body.status
+      operator: eq
+      value: reset
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

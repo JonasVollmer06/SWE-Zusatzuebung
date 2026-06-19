@@ -1,0 +1,36 @@
+info:
+  name: Ungueltige Position
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    mode: json
+    json: |-
+      {
+        "nachname": "Musiala",
+        "nationalitaet": "Deutschland",
+        "position": "TRAINER",
+        "geburtsdatum": "2003-02-26T00:00:00Z",
+        "username": "bruno-invalid-position"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "400"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

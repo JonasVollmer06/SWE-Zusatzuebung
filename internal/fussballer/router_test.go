@@ -44,6 +44,9 @@ func (r fakeReader) Count(ctx context.Context, criteria SearchCriteria) (int, er
 
 type fakeWriter struct {
 	createFunc func(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	updateFunc func(ctx context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error)
+	deleteFunc func(ctx context.Context, id int) error
+	resetFunc  func(ctx context.Context) error
 }
 
 func (w fakeWriter) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
@@ -52,6 +55,34 @@ func (w fakeWriter) Create(ctx context.Context, request CreateFussballerRequest)
 	}
 
 	return w.createFunc(ctx, request)
+}
+
+func (w fakeWriter) Update(
+	ctx context.Context,
+	id int,
+	request UpdateFussballerRequest,
+) (*Fussballer, error) {
+	if w.updateFunc == nil {
+		return nil, errors.New("unexpected Update call")
+	}
+
+	return w.updateFunc(ctx, id, request)
+}
+
+func (w fakeWriter) Delete(ctx context.Context, id int) error {
+	if w.deleteFunc == nil {
+		return errors.New("unexpected Delete call")
+	}
+
+	return w.deleteFunc(ctx, id)
+}
+
+func (w fakeWriter) Reset(ctx context.Context) error {
+	if w.resetFunc == nil {
+		return errors.New("unexpected Reset call")
+	}
+
+	return w.resetFunc(ctx)
 }
 
 func TestRouterFindByID(t *testing.T) {
@@ -319,5 +350,209 @@ func TestRouterCreateReturnsValidationError(t *testing.T) {
 
 	if response.Code != http.StatusBadRequest {
 		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+}
+
+func TestRouterUpdate(t *testing.T) {
+	birthDate := time.Date(2004, time.November, 24, 0, 0, 0, 0, time.UTC)
+	expectedRequest := UpdateFussballerRequest{
+		Nachname:      "Ulm",
+		Nationalitaet: "Irland",
+		Position:      PositionTorwart,
+		Geburtsdatum:  birthDate,
+		Username:      "mark",
+	}
+	updated := &Fussballer{
+		ID:            30,
+		Version:       1,
+		Nachname:      "Ulm",
+		Nationalitaet: "Irland",
+		Position:      &[]Position{PositionTorwart}[0],
+		Geburtsdatum:  birthDate,
+		Username:      "mark",
+	}
+
+	router := NewRouter(fakeReader{}, fakeWriter{
+		updateFunc: func(_ context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error) {
+			if id != 30 {
+				t.Fatalf("expected id 30, got %d", id)
+			}
+			if !reflect.DeepEqual(request, expectedRequest) {
+				t.Fatalf("expected request %+v, got %+v", expectedRequest, request)
+			}
+
+			return updated, nil
+		},
+	})
+
+	body := `{
+		"nachname": "Ulm",
+		"nationalitaet": "Irland",
+		"position": "TORWART",
+		"geburtsdatum": "2004-11-24T00:00:00Z",
+		"username": "mark"
+	}`
+	request := httptest.NewRequest(http.MethodPut, "/30", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+	if response.Header().Get("ETag") != `"1"` {
+		t.Fatalf("expected ETag %q, got %q", `"1"`, response.Header().Get("ETag"))
+	}
+
+	var player Fussballer
+	if err := json.NewDecoder(response.Body).Decode(&player); err != nil {
+		t.Fatalf("expected JSON body, got %v", err)
+	}
+	if player.ID != updated.ID || player.Version != updated.Version {
+		t.Fatalf("unexpected player response: %+v", player)
+	}
+}
+
+func TestRouterUpdateRejectsInvalidJSON(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodPut, "/30", bytes.NewBufferString(`{"nachname":`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, response.Code)
+	}
+}
+
+func TestRouterUpdateRejectsUnsupportedMediaType(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodPut, "/30", bytes.NewBufferString(`{}`))
+	request.Header.Set("Content-Type", "text/plain")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusUnsupportedMediaType {
+		t.Fatalf("expected status %d, got %d", http.StatusUnsupportedMediaType, response.Code)
+	}
+}
+
+func TestRouterUpdateRejectsInvalidID(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodPut, "/xyz", bytes.NewBufferString(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterUpdateReturnsNotFound(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		updateFunc: func(_ context.Context, _ int, _ UpdateFussballerRequest) (*Fussballer, error) {
+			return nil, ErrNotFound
+		},
+	})
+
+	body := `{
+		"nachname": "Ulm",
+		"nationalitaet": "Irland",
+		"position": "TORWART",
+		"geburtsdatum": "2004-11-24T00:00:00Z",
+		"username": "mark"
+	}`
+	request := httptest.NewRequest(http.MethodPut, "/30", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterDelete(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		deleteFunc: func(_ context.Context, id int) error {
+			if id != 1000 {
+				t.Fatalf("expected id 1000, got %d", id)
+			}
+
+			return nil
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodDelete, "/1000", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("expected status %d, got %d", http.StatusNoContent, response.Code)
+	}
+}
+
+func TestRouterDeleteRejectsInvalidID(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{})
+
+	request := httptest.NewRequest(http.MethodDelete, "/xyz", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterDeleteReturnsNotFound(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		deleteFunc: func(_ context.Context, _ int) error {
+			return ErrNotFound
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodDelete, "/1000", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("expected status %d, got %d", http.StatusNotFound, response.Code)
+	}
+}
+
+func TestRouterReset(t *testing.T) {
+	router := NewRouter(fakeReader{}, fakeWriter{
+		resetFunc: func(_ context.Context) error {
+			return nil
+		},
+	})
+
+	request := httptest.NewRequest(http.MethodPost, "/reset", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+
+	var result map[string]string
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+		t.Fatalf("expected JSON body, got %v", err)
+	}
+	if result["status"] != "reset" {
+		t.Fatalf("expected reset status, got %+v", result)
 	}
 }

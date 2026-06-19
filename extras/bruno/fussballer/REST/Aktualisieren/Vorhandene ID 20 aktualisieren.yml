@@ -1,0 +1,63 @@
+info:
+  name: Vorhandene ID 20 aktualisieren
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{restUrl}}/:id"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  params:
+    - name: id
+      value: "20"
+      type: path
+  body:
+    mode: json
+    json: |-
+      {
+        "nachname": "Aktualisiert",
+        "nationalitaet": "Deutschland",
+        "position": "STUERMER",
+        "geburtsdatum": "2002-02-02T00:00:00Z",
+        "username": "updated-20",
+        "adresse": {
+          "plz": "76131",
+          "ort": "Karlsruhe",
+          "bundesland": "Baden-Wuerttemberg"
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test('Body: aktualisierter Fussballer', () => {
+          const fussballer = res.getBody();
+          expect(fussballer.id).to.be.equal(20);
+          expect(fussballer.nachname).to.be.equal('Aktualisiert');
+          expect(fussballer.username).to.be.equal('updated-20');
+          expect(fussballer.version).to.be.equal(1);
+          expect(fussballer.position).to.be.equal('STUERMER');
+          expect(fussballer.adresse.ort).to.be.equal('Karlsruhe');
+        });
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.headers['content-type']
+      operator: matches
+      value: ^application\/json(; charset=utf-8)?$
+    - expression: res.headers.etag
+      operator: eq
+      value: "\"1\""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -13,23 +14,40 @@ import (
 	"swe-zusatzuebung/internal/database"
 	"swe-zusatzuebung/internal/fussballer"
 	"swe-zusatzuebung/internal/server"
+
+	"gorm.io/gorm"
 )
 
 func newReadAPIRouter(t *testing.T) http.Handler {
 	t.Helper()
 
+	router, _ := newAPITestRouter(t)
+	return router
+}
+
+func newAPITestRouter(t *testing.T) (http.Handler, *gorm.DB) {
+	t.Helper()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := database.Connect(ctx, config.Load().DatabaseURL)
+	db, err := database.Connect(ctx, config.Load().DatabaseURL)
 	if err != nil {
 		t.Skipf("PostgreSQL is not available for integration tests: %v", err)
 	}
-	t.Cleanup(pool.Close)
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("expected SQL database handle, got %v", err)
+	}
+	t.Cleanup(func() {
+		_ = sqlDB.Close()
+	})
 
-	repository := fussballer.NewRepository(pool)
+	repository := fussballer.NewRepository(db)
 	readService := fussballer.NewReadService(repository)
-	return server.NewRouter(fussballer.NewRouter(readService))
+	writeService := fussballer.NewWriteService(repository)
+
+	return server.NewRouter(fussballer.NewRouter(readService, writeService)), db
 }
 
 func request(router http.Handler, method string, target string) *httptest.ResponseRecorder {
@@ -51,6 +69,29 @@ func requestWithHeaders(
 	response := httptest.NewRecorder()
 	router.ServeHTTP(response, request)
 	return response
+}
+
+func requestJSON(router http.Handler, method string, target string, body string) *httptest.ResponseRecorder {
+	request := httptest.NewRequest(method, target, bytes.NewBufferString(body))
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+	return response
+}
+
+func resetFussballerByUsername(t *testing.T, db *gorm.DB, username string) {
+	t.Helper()
+
+	deleteByUsername := func() {
+		if err := db.Exec("DELETE FROM fussballer.fussballer WHERE username = ?", username).Error; err != nil {
+			t.Fatalf("expected cleanup for username %q to succeed, got %v", username, err)
+		}
+	}
+
+	deleteByUsername()
+	t.Cleanup(deleteByUsername)
 }
 
 func assertStatus(t *testing.T, response *httptest.ResponseRecorder, expected int) {

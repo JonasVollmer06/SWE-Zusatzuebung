@@ -70,6 +70,15 @@ type CreateFussballerRequest struct {
 	Adresse       *CreateAdresseRequest `json:"adresse,omitempty"`
 }
 
+type UpdateFussballerRequest struct {
+	Nachname      string                `json:"nachname" validate:"required"`
+	Nationalitaet string                `json:"nationalitaet" validate:"required"`
+	Position      Position              `json:"position" validate:"required"`
+	Geburtsdatum  time.Time             `json:"geburtsdatum" validate:"required"`
+	Username      string                `json:"username" validate:"required"`
+	Adresse       *CreateAdresseRequest `json:"adresse,omitempty"`
+}
+
 type CreateAdresseRequest struct {
 	PLZ        string `json:"plz" validate:"required"`
 	Ort        string `json:"ort" validate:"required"`

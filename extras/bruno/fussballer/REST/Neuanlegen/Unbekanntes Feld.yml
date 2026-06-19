@@ -1,0 +1,37 @@
+info:
+  name: Unbekanntes Feld
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    mode: json
+    json: |-
+      {
+        "nachname": "Musiala",
+        "nationalitaet": "Deutschland",
+        "position": "MITTELFELDSPIELER",
+        "geburtsdatum": "2003-02-26T00:00:00Z",
+        "username": "bruno-unknown-field",
+        "verein": "FC Bayern"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "400"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
