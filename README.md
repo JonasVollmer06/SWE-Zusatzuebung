@@ -89,3 +89,18 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `pgxpool`, liest `DATABASE_URL` aus der Umgebung oder verwendet lokal
   `postgres://fussballer:p@localhost:5432/fussballer?sslmode=disable` und prueft
   die Verbindung beim Start mit einem Ping. `go test ./...` ist erfolgreich.
+- Zusatzrequest: Git soll als fester Teil des Projekts genutzt werden:
+  passende Branches, kleine sinnvolle Commits und Push optional manuell durch den
+  Nutzer.
+- KI-Antwort/Entscheidung: Fuer den naechsten fachlichen Schritt wurde der
+  Feature-Branch `codex-fussballer-read-api` angelegt. Die Git-Arbeitsweise wurde
+  in `README-Projekt.md` dokumentiert.
+- Zusatzinput: Vorlesungsmitschrieb `erklaerung.txt` bestaetigt REST-Schnittstelle
+  mit DB-Zugriff, Nutzung des bestehenden DB-Servers, Git-Repository, laufenden
+  Docker-Betrieb und Dokumentation der KI-Requests in der Abgabe-ReadMe.
+- Nutzerrequest: Sinnvolle `.gitignore` hinzufuegen und langsam mit dem Serveraufbau
+  weitermachen; Frage, ob zuerst die Models sinnvoll sind.
+- KI-Antwort/Entscheidung: Ja, zuerst schlanke Models, weil sie die gemeinsame
+  Datenstruktur fuer Repository, Service und Router bilden. Angelegt wurden
+  `.gitignore`, `internal/fussballer/model.go` und ein erster Test
+  `internal/fussballer/model_test.go` fuer gueltige Positionswerte.
