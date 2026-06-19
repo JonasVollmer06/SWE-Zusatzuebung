@@ -114,3 +114,9 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   PostgreSQL erfolgreich aus `swe_zusatzuebung\extras\compose\postgres` gestartet.
   Der Container ist `healthy`; die Abfrage auf `fussballer.fussballer` liefert
   weiterhin 7 Datensaetze.
+- Nutzerrequest: Beim Serverstart soll ein Banner ausgegeben werden.
+- KI-Antwort/Entscheidung: Das Banner wurde als eigene Funktion
+  `server.PrintBanner()` in `internal/server/banner.go` umgesetzt und in
+  `cmd/server/main.go` beim Start aufgerufen.
+- Ergebnis: `go test ./...` ist erfolgreich; ein kurzer Smoke-Test von `/health`
+  war ebenfalls erfolgreich.

@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	server.PrintBanner()
+
 	cfg := config.Load()
 
 	dbpool, err := database.Connect(context.Background(), cfg.DatabaseURL)

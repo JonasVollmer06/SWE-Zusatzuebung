@@ -30,6 +30,7 @@ kann.
   `CreateFussballerRequest` wurden angelegt.
 - PostgreSQL kann jetzt direkt aus diesem Projekt gestartet werden:
   `extras/compose/postgres/compose.yml`.
+- Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -284,6 +285,7 @@ swe_zusatzuebung/
     database/
       database.go
     server/
+      banner.go
       router.go
       router_test.go
     fussballer/
@@ -305,7 +307,7 @@ swe_zusatzuebung/
 - `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.
 - `internal/database`: Aufbau und Pruefung der PostgreSQL-Verbindung.
-- `internal/server`: Allgemeiner HTTP-Router, aktuell mit Health Check.
+- `internal/server`: Allgemeiner HTTP-Router, Health Check und Startbanner.
 - `internal/fussballer`: Fachlogik fuer Fussballer.
 - `repository.go`: Datenbankzugriff.
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
@@ -420,6 +422,7 @@ Validierung:
 Aktuell kann der Server:
 
 - per HTTP starten,
+- beim Start ein Banner ausgeben,
 - beim Start eine PostgreSQL-Verbindung aufbauen und pruefen,
 - einen Health-Endpunkt anbieten.
 
