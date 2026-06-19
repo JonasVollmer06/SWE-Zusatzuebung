@@ -155,6 +155,16 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `nachname`, `nationalitaet` und `position` umgesetzt.
 - Ergebnis: `go test ./...` ist erfolgreich; Unit-Tests fuer den dynamischen
   WHERE-Klausel-Aufbau wurden ergaenzt.
+- Nutzerrequest: Nach gleichem Vorgehen soll nun der Router fuer den Lesezugriff
+  entstehen, wieder orientiert am Hono-Projekt.
+- KI-Antwort/Entscheidung: Da im aktuellen Git-Stand noch kein Read-Service
+  vorhanden war, wurde zuerst `internal/fussballer/service.go` ergaenzt und
+  danach `internal/fussballer/router.go` umgesetzt. Der Router bietet
+  `GET /fussballer/{id}` mit ETag und `If-None-Match`, `GET /fussballer` mit
+  Query-Parametern `nachname`, `nationalitaet`, `position`, Pagination ueber
+  `page` und `size` sowie `count-only`.
+- Ergebnis: `cmd/server/main.go` verdrahtet nun Repository, Read-Service und
+  Fussballer-Router. Router- und Service-Tests wurden ergaenzt; `go test ./...`
 - Nutzerrequest: Orientierung am alten Hono-Projekt und Umsetzung eines
   Read-Service fuer den Lesezugriff, inklusive Tests falls sinnvoll.
 - KI-Antwort/Entscheidung: Der Read-Service wurde in Go als Schicht ueber dem

@@ -39,6 +39,8 @@ kann.
   Formatierung, `go vet` und Tests.
 - Repository fuer den Lesezugriff auf Fussballer ist implementiert:
   `internal/fussballer/repository.go`.
+- Read-Service und Router fuer den Lesezugriff sind implementiert:
+  `internal/fussballer/service.go` und `internal/fussballer/router.go`.
 - Read-Service fuer den Lesezugriff ist implementiert:
   `internal/fussballer/service.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
@@ -480,6 +482,12 @@ Aktuell kann der Server:
 - per HTTP starten,
 - beim Start ein Banner ausgeben,
 - beim Start eine PostgreSQL-Verbindung aufbauen und pruefen,
+- einen Health-Endpunkt anbieten,
+- Fussballer per ID lesen: `GET /fussballer/{id}`,
+- Fussballer per Query-Parameter suchen: `GET /fussballer`,
+- Fussballer zaehlen: `GET /fussballer?count-only=true`,
+- ETags fuer einzelne Fussballer ausgeben und `If-None-Match` mit `304 Not Modified`
+  beantworten.
 - einen Health-Endpunkt anbieten.
 - im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
 - im Read-Service IDs, Suchparameter und Pagination fuer den Lesezugriff pruefen.
@@ -514,6 +522,8 @@ go test ./...
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
+- Router fuer `POST /fussballer` implementieren.
+- Validierung fuer `POST /fussballer` anbinden.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
