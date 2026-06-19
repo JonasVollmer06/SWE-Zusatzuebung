@@ -120,6 +120,32 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `cmd/server/main.go` beim Start aufgerufen.
 - Ergebnis: `go test ./...` ist erfolgreich; ein kurzer Smoke-Test von `/health`
   war ebenfalls erfolgreich.
+- Nutzerrequest: PostgreSQL-Setup soll per Script fuer dieses Projekt neu aufgebaut
+  werden, aber mit den alten Volume-Namen `pg_data`, `pg_tablespace` und `pg_init`.
+- KI-Antwort/Entscheidung: `extras/compose/postgres/setup.ps1` wurde angelegt.
+  Das Script erstellt/prueft die alten Docker-Volumes, kopiert die Init-Dateien aus
+  diesem Projekt in `pg_init`, bereitet den Tablespace vor, startet bei leerem
+  `pg_data` einmal ohne TLS und danach normal mit TLS. Die SQL-Initialisierung wird
+  nur ausgefuehrt, wenn die Datenbank `fussballer` noch nicht existiert.
+- Ergebnis: `setup.ps1` wurde erfolgreich ausgefuehrt. Es erkannte die vorhandene
+  Datenbank, uebersprang die SQL-Neuanlage und pruefte `select count(*) from
+  fussballer.fussballer;` mit Ergebnis 7. `go test ./...` ist erfolgreich.
+- Nutzerrequest: Linter und Formatierungstool einbauen, pruefen und ausfuehren.
+- KI-Antwort/Entscheidung: Fuer den ersten Schritt werden Go-Bordmittel verwendet:
+  `gofmt` als Formatierer und `go vet` als Linter/statische Pruefung. Dafuer wurden
+  die Skripte `scripts/format.ps1`, `scripts/lint.ps1`, `scripts/check.ps1` und
+  `scripts/go-tools.ps1` angelegt.
+- Ergebnis: PowerShell-Syntaxcheck, Formatierung, Linting und Gesamtcheck mit Tests
+  wurden erfolgreich ausgefuehrt.
+- Nutzerrequest: GitHub Actions einbauen, sodass bei Pushes Tests, Linter und
+  Formatierer ausgefuehrt werden.
+- KI-Antwort/Entscheidung: Ein einfacher Workflow `.github/workflows/ci.yml` wurde
+  angelegt. Er nutzt `actions/checkout`, `actions/setup-go` mit `go.mod`,
+  `go mod download`, einen `gofmt`-Formatcheck, `go vet ./...` und `go test ./...`.
+  Lokal wurde zusaetzlich `scripts/format-check.ps1` ergaenzt und in
+  `scripts/check.ps1` eingebunden.
+- Ergebnis: PowerShell-Syntaxcheck und `scripts/check.ps1` wurden lokal erfolgreich
+  ausgefuehrt.
 - Nutzerrequest: Aktuellen Stand holen und ein Repository fuer den Lesezugriff
   erstellen, orientiert am Hono-Projekt, aber passend fuer Go.
 - KI-Antwort/Entscheidung: Der Stand war bereits aktuell. Das Hono-Projekt wurde
@@ -139,4 +165,11 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `page` und `size` sowie `count-only`.
 - Ergebnis: `cmd/server/main.go` verdrahtet nun Repository, Read-Service und
   Fussballer-Router. Router- und Service-Tests wurden ergaenzt; `go test ./...`
+- Nutzerrequest: Orientierung am alten Hono-Projekt und Umsetzung eines
+  Read-Service fuer den Lesezugriff, inklusive Tests falls sinnvoll.
+- KI-Antwort/Entscheidung: Der Read-Service wurde in Go als Schicht ueber dem
+  Repository angelegt. Er validiert IDs, Suchparameter und Pagination, ruft
+  Repository-Methoden fuer `findById`, Suche und Count auf und liefert einen
+  Slice mit `content` und `totalElements`.
+- Ergebnis: Service-Tests mit Fake-Repository wurden ergaenzt; `go test ./...`
   ist erfolgreich.

@@ -118,6 +118,30 @@ func TestReadServiceFindAppliesPageable(t *testing.T) {
 	}
 }
 
+func TestReadServiceFindUsesDefaultPageSize(t *testing.T) {
+	service := NewReadService(&fakeReadRepository{
+		findFunc: func(_ context.Context, criteria SearchCriteria) ([]Fussballer, error) {
+			if criteria.Limit != DefaultPageSize {
+				t.Fatalf("expected default limit %d, got %d", DefaultPageSize, criteria.Limit)
+			}
+			if criteria.Offset != 0 {
+				t.Fatalf("expected offset 0, got %d", criteria.Offset)
+			}
+
+			return []Fussballer{{ID: 1000}}, nil
+		},
+		countFunc: func(_ context.Context, _ SearchCriteria) (int, error) {
+			return 1, nil
+		},
+	})
+
+	_, err := service.Find(context.Background(), SearchCriteria{}, Pageable{Number: -1, Size: 0})
+
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
 func TestReadServiceFindRejectsInvalidPosition(t *testing.T) {
 	position := Position("TRAINER")
 	service := NewReadService(&fakeReadRepository{})
