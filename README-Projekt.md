@@ -37,6 +37,10 @@ kann.
   `scripts` verfuegbar.
 - GitHub Actions CI ist eingerichtet und prueft bei Push und Pull Request
   Formatierung, `go vet` und Tests.
+- Repository fuer den Lesezugriff auf Fussballer ist implementiert:
+  `internal/fussballer/repository.go`.
+- Read-Service fuer den Lesezugriff ist implementiert:
+  `internal/fussballer/service.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -477,6 +481,8 @@ Aktuell kann der Server:
 - beim Start ein Banner ausgeben,
 - beim Start eine PostgreSQL-Verbindung aufbauen und pruefen,
 - einen Health-Endpunkt anbieten.
+- im Repository Fussballer per ID, Suchparameter und Count aus PostgreSQL lesen.
+- im Read-Service IDs, Suchparameter und Pagination fuer den Lesezugriff pruefen.
 
 Am Ende soll der Server zusaetzlich:
 

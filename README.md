@@ -146,3 +146,20 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   `scripts/check.ps1` eingebunden.
 - Ergebnis: PowerShell-Syntaxcheck und `scripts/check.ps1` wurden lokal erfolgreich
   ausgefuehrt.
+- Nutzerrequest: Aktuellen Stand holen und ein Repository fuer den Lesezugriff
+  erstellen, orientiert am Hono-Projekt, aber passend fuer Go.
+- KI-Antwort/Entscheidung: Der Stand war bereits aktuell. Das Hono-Projekt wurde
+  fuer `findById`, Query-Parameter-Suche und Count als fachliche Vorlage gelesen.
+  In Go wurde `internal/fussballer/repository.go` mit `pgxpool`, SQL-Queries,
+  Fehlern fuer `not found` und ungueltige Suchparameter sowie Suchkriterien fuer
+  `nachname`, `nationalitaet` und `position` umgesetzt.
+- Ergebnis: `go test ./...` ist erfolgreich; Unit-Tests fuer den dynamischen
+  WHERE-Klausel-Aufbau wurden ergaenzt.
+- Nutzerrequest: Orientierung am alten Hono-Projekt und Umsetzung eines
+  Read-Service fuer den Lesezugriff, inklusive Tests falls sinnvoll.
+- KI-Antwort/Entscheidung: Der Read-Service wurde in Go als Schicht ueber dem
+  Repository angelegt. Er validiert IDs, Suchparameter und Pagination, ruft
+  Repository-Methoden fuer `findById`, Suche und Count auf und liefert einen
+  Slice mit `content` und `totalElements`.
+- Ergebnis: Service-Tests mit Fake-Repository wurden ergaenzt; `go test ./...`
+  ist erfolgreich.
