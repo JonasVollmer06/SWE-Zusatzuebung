@@ -1,0 +1,40 @@
+info:
+  name: Ungueltige Position
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: "{{restUrl}}/:id"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  params:
+    - name: id
+      value: "20"
+      type: path
+  body:
+    mode: json
+    json: |-
+      {
+        "nachname": "Aktualisiert",
+        "nationalitaet": "Deutschland",
+        "position": "TRAINER",
+        "geburtsdatum": "2002-02-02T00:00:00Z",
+        "username": "updated-invalid"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "400"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

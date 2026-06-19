@@ -12,6 +12,7 @@ var ErrValidation = errors.New("validation failed")
 
 type WriteRepository interface {
 	Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	Update(ctx context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error)
 	Delete(ctx context.Context, id int) error
 	Reset(ctx context.Context) error
 }
@@ -42,6 +43,28 @@ func (s *WriteService) Create(ctx context.Context, request CreateFussballerReque
 	return s.repository.Create(ctx, request)
 }
 
+func (s *WriteService) Update(
+	ctx context.Context,
+	id int,
+	request UpdateFussballerRequest,
+) (*Fussballer, error) {
+	if id < 1 {
+		return nil, ErrInvalidID
+	}
+
+	request = normalizeUpdateRequest(request)
+
+	if err := s.validator.Struct(request); err != nil {
+		return nil, ErrValidation
+	}
+
+	if !request.Position.IsValid() {
+		return nil, ErrValidation
+	}
+
+	return s.repository.Update(ctx, id, request)
+}
+
 func (s *WriteService) Delete(ctx context.Context, id int) error {
 	if id < 1 {
 		return ErrInvalidID
@@ -55,6 +78,20 @@ func (s *WriteService) Reset(ctx context.Context) error {
 }
 
 func normalizeCreateRequest(request CreateFussballerRequest) CreateFussballerRequest {
+	request.Nachname = strings.TrimSpace(request.Nachname)
+	request.Nationalitaet = strings.TrimSpace(request.Nationalitaet)
+	request.Username = strings.TrimSpace(request.Username)
+
+	if request.Adresse != nil {
+		request.Adresse.PLZ = strings.TrimSpace(request.Adresse.PLZ)
+		request.Adresse.Ort = strings.TrimSpace(request.Adresse.Ort)
+		request.Adresse.Bundesland = strings.TrimSpace(request.Adresse.Bundesland)
+	}
+
+	return request
+}
+
+func normalizeUpdateRequest(request UpdateFussballerRequest) UpdateFussballerRequest {
 	request.Nachname = strings.TrimSpace(request.Nachname)
 	request.Nationalitaet = strings.TrimSpace(request.Nationalitaet)
 	request.Username = strings.TrimSpace(request.Username)

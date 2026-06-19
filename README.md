@@ -302,3 +302,16 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   und Integrationstests fuer Delete und Reset wurden ergaenzt. Bruno enthaelt nun
   die Ordner `REST/Loeschen` und `REST/Datenbank`, inklusive Request
   `DB auf CSV Stand resetten`. `scripts/check.ps1` ist erfolgreich.
+- Nutzerrequest: Klarstellung, dass mit einfachen Write-Requests neben Delete
+  auch PUT/Update gemeint war. Update soll in Tests, Repository, Bruno, Service,
+  Router und Unit-Tests ergaenzt werden.
+- KI-Antwort/Entscheidung: `PUT /fussballer/{id}` wurde als vollstaendiges
+  Update umgesetzt. Der Request nutzt dieselben fachlichen Felder wie `POST`.
+  Das Repository aktualisiert den Fussballer und die Adresse in einer
+  Transaktion, erhoeht die Version und liefert den aktualisierten Datensatz
+  inklusive Relationen zurueck.
+- Ergebnis: `UpdateFussballerRequest`, Repository-Update, Write-Service-Update
+  und Router-Handler wurden ergaenzt. Unit-Tests und Integrationstests fuer
+  Update wurden hinzugefuegt. Bruno enthaelt nun den Ordner `REST/Aktualisieren`
+  mit erfolgreichem PUT, NotFound-Fall und ungueltiger Position. `scripts/check.ps1`
+  ist erfolgreich.

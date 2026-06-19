@@ -47,8 +47,8 @@ kann.
   `internal/fussballer/write_service.go`.
 - Read-Service, Read-Router und Write-Router sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
-- Delete-Endpunkt und HTTP-Reset-Endpunkt sind implementiert:
-  `DELETE /fussballer/{id}` und `POST /fussballer/reset`.
+- Update-, Delete- und HTTP-Reset-Endpunkt sind implementiert:
+  `PUT /fussballer/{id}`, `DELETE /fussballer/{id}` und `POST /fussballer/reset`.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
   `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
   und `internal/integration/helpers_test.go`.
@@ -56,6 +56,8 @@ kann.
   `internal/integration/post_create_test.go`.
 - Integrationstests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
   sind implementiert: `internal/integration/delete_reset_test.go`.
+- Integrationstests fuer `PUT /fussballer/{id}` sind implementiert:
+  `internal/integration/put_update_test.go`.
 - Bruno-Collection fuer die lesenden und schreibenden REST-Endpunkte ist angelegt:
   `extras/bruno/fussballer`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
@@ -311,6 +313,8 @@ Bruno-Requests:
   `GET /fussballer` mit Query-Parametern.
 - `extras/bruno/fussballer/REST/Neuanlegen`: Beispiele fuer `POST /fussballer`,
   inklusive erfolgreichem Anlegen und Validierungsfehlern.
+- `extras/bruno/fussballer/REST/Aktualisieren`: Beispiele fuer
+  `PUT /fussballer/{id}`.
 - `extras/bruno/fussballer/REST/Loeschen`: Beispiele fuer
   `DELETE /fussballer/{id}`.
 - `extras/bruno/fussballer/REST/Datenbank`: Request fuer
@@ -373,6 +377,7 @@ swe_zusatzuebung/
       fussballer/
         opencollection.yml
         REST/
+          Aktualisieren/
           Datenbank/
           Loeschen/
           Neuanlegen/
@@ -578,6 +583,42 @@ Validierung:
 - `username` ist Pflichtfeld.
 - `position` muss einer der erlaubten Enum-Werte sein.
 
+### Fussballer aktualisieren
+
+```http
+PUT /fussballer/{id}
+Content-Type: application/json
+```
+
+Zweck: Einen vorhandenen Fussballer vollstaendig aktualisieren.
+
+Beispiel:
+
+```json
+{
+  "nachname": "Aktualisiert",
+  "nationalitaet": "Deutschland",
+  "position": "STUERMER",
+  "geburtsdatum": "2002-02-02T00:00:00Z",
+  "username": "updated-20",
+  "adresse": {
+    "plz": "76131",
+    "ort": "Karlsruhe",
+    "bundesland": "Baden-Wuerttemberg"
+  }
+}
+```
+
+Erfolgsantwort:
+
+```text
+200 OK
+ETag: "{version}"
+```
+
+Nicht vorhandene oder ungueltige IDs liefern `404 Not Found`. Ungueltige
+Request-Daten liefern `400 Bad Request`.
+
 ### Fussballer loeschen
 
 ```http
@@ -625,6 +666,7 @@ Aktuell kann der Server:
 - Fussballer per Query-Parameter suchen: `GET /fussballer`,
 - Fussballer zaehlen: `GET /fussballer?count-only=true`,
 - neue Fussballer per JSON anlegen: `POST /fussballer`,
+- vorhandene Fussballer per JSON aktualisieren: `PUT /fussballer/{id}`,
 - Fussballer per ID loeschen: `DELETE /fussballer/{id}`,
 - die Datenbank per HTTP auf CSV-Stand resetten: `POST /fussballer/reset`,
 - Eingaben beim Neuanlegen validieren,
@@ -644,6 +686,8 @@ Geplant:
 - Integrationstests gegen eine laufende PostgreSQL-Datenbank; falls PostgreSQL nicht
   erreichbar ist, werden diese Tests uebersprungen.
 - Write-Integrationstests pruefen den echten POST-Weg und lesen den erzeugten
+  Datensatz anschliessend wieder per `GET /fussballer/{id}`.
+- Update-Integrationstests pruefen den echten PUT-Weg und lesen den geaenderten
   Datensatz anschliessend wieder per `GET /fussballer/{id}`.
 - Delete- und Reset-Integrationstests pruefen das Loeschen echter Datensaetze und
   das Wiederherstellen des CSV-Ausgangsstands.
@@ -669,7 +713,8 @@ go test ./...
 - GitHub Actions CI ist eingerichtet.
 - Write-Integrationstests sind eingerichtet und getestet.
 - Bruno-Requests fuer `POST /fussballer` sind eingerichtet.
-- Delete- und Reset-Endpunkte sind eingerichtet und getestet.
+- Update-, Delete- und Reset-Endpunkte sind eingerichtet und getestet.
+- Bruno-Requests fuer `PUT /fussballer/{id}` sind eingerichtet.
 - Bruno-Requests fuer `DELETE /fussballer/{id}` und `POST /fussballer/reset`
   sind eingerichtet.
 - Offen: optional Keycloak/OIDC ergaenzen.

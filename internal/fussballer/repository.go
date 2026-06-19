@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -114,6 +115,61 @@ func (r *Repository) Create(ctx context.Context, request CreateFussballerRequest
 	}
 
 	return &player, nil
+}
+
+func (r *Repository) Update(ctx context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error) {
+	var player Fussballer
+	position := request.Position
+
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&player, "id = ?", id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrNotFound
+			}
+			return err
+		}
+
+		player.Nachname = request.Nachname
+		player.Nationalitaet = request.Nationalitaet
+		player.Position = &position
+		player.Geburtsdatum = request.Geburtsdatum
+		player.Username = request.Username
+		player.Version++
+		player.Aktualisiert = time.Now().UTC()
+
+		if err := tx.Save(&player).Error; err != nil {
+			return err
+		}
+
+		if request.Adresse == nil {
+			if err := tx.Delete(&Adresse{}, "fussballer_id = ?", id).Error; err != nil {
+				return err
+			}
+			return nil
+		}
+
+		var address Adresse
+		err := tx.First(&address, "fussballer_id = ?", id).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		address.PLZ = request.Adresse.PLZ
+		address.Ort = request.Adresse.Ort
+		address.Bundesland = request.Adresse.Bundesland
+		address.FussballerID = id
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return tx.Create(&address).Error
+		}
+
+		return tx.Save(&address).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return r.FindByID(ctx, id)
 }
 
 func (r *Repository) Delete(ctx context.Context, id int) error {

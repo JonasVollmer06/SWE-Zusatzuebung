@@ -20,6 +20,7 @@ type Reader interface {
 
 type Writer interface {
 	Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	Update(ctx context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error)
 	Delete(ctx context.Context, id int) error
 	Reset(ctx context.Context) error
 }
@@ -49,6 +50,7 @@ func NewRouter(reader Reader, writers ...Writer) http.Handler {
 	if handler.writer != nil {
 		router.Post("/", handler.create)
 		router.Post("/reset", handler.reset)
+		router.Put("/{id}", handler.update)
 		router.Delete("/{id}", handler.delete)
 	}
 
@@ -150,6 +152,42 @@ func (h routerHandler) create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", "/fussballer/"+strconv.Itoa(player.ID))
 	w.Header().Set("ETag", `"`+strconv.Itoa(player.Version)+`"`)
 	writeJSON(w, http.StatusCreated, player)
+}
+
+func (h routerHandler) update(w http.ResponseWriter, r *http.Request) {
+	if !acceptsJSON(r) {
+		w.WriteHeader(http.StatusNotAcceptable)
+		return
+	}
+
+	if !isJSONContent(r) {
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	var request UpdateFussballerRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	player, err := h.writer.Update(r.Context(), id, request)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Header().Set("ETag", `"`+strconv.Itoa(player.Version)+`"`)
+	writeJSON(w, http.StatusOK, player)
 }
 
 func (h routerHandler) delete(w http.ResponseWriter, r *http.Request) {

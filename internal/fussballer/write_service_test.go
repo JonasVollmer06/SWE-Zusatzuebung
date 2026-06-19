@@ -10,6 +10,7 @@ import (
 
 type fakeWriteRepository struct {
 	createFunc func(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error)
+	updateFunc func(ctx context.Context, id int, request UpdateFussballerRequest) (*Fussballer, error)
 	deleteFunc func(ctx context.Context, id int) error
 	resetFunc  func(ctx context.Context) error
 }
@@ -20,6 +21,18 @@ func (r *fakeWriteRepository) Create(ctx context.Context, request CreateFussball
 	}
 
 	return r.createFunc(ctx, request)
+}
+
+func (r *fakeWriteRepository) Update(
+	ctx context.Context,
+	id int,
+	request UpdateFussballerRequest,
+) (*Fussballer, error) {
+	if r.updateFunc == nil {
+		return nil, errors.New("unexpected Update call")
+	}
+
+	return r.updateFunc(ctx, id, request)
 }
 
 func (r *fakeWriteRepository) Delete(ctx context.Context, id int) error {
@@ -154,6 +167,80 @@ func TestWriteServiceCreateReturnsRepositoryError(t *testing.T) {
 
 	if !errors.Is(err, expectedErr) {
 		t.Fatalf("expected repository error, got %v", err)
+	}
+}
+
+func TestWriteServiceUpdate(t *testing.T) {
+	birthDate := time.Date(2003, time.February, 26, 0, 0, 0, 0, time.UTC)
+	request := UpdateFussballerRequest{
+		Nachname:      " Musiala ",
+		Nationalitaet: " Deutschland ",
+		Position:      PositionMittelfeldspieler,
+		Geburtsdatum:  birthDate,
+		Username:      " jamal ",
+		Adresse: &CreateAdresseRequest{
+			PLZ: " 80331 ",
+			Ort: " Muenchen ",
+		},
+	}
+	expectedRequest := UpdateFussballerRequest{
+		Nachname:      "Musiala",
+		Nationalitaet: "Deutschland",
+		Position:      PositionMittelfeldspieler,
+		Geburtsdatum:  birthDate,
+		Username:      "jamal",
+		Adresse: &CreateAdresseRequest{
+			PLZ: "80331",
+			Ort: "Muenchen",
+		},
+	}
+	expected := &Fussballer{ID: 20, Nachname: "Musiala", Version: 1}
+
+	service := NewWriteService(&fakeWriteRepository{
+		updateFunc: func(_ context.Context, id int, got UpdateFussballerRequest) (*Fussballer, error) {
+			if id != 20 {
+				t.Fatalf("expected id 20, got %d", id)
+			}
+			if !reflect.DeepEqual(got, expectedRequest) {
+				t.Fatalf("expected request %+v, got %+v", expectedRequest, got)
+			}
+
+			return expected, nil
+		},
+	})
+
+	player, err := service.Update(context.Background(), 20, request)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if player != expected {
+		t.Fatalf("expected player %v, got %v", expected, player)
+	}
+}
+
+func TestWriteServiceUpdateRejectsInvalidID(t *testing.T) {
+	service := NewWriteService(&fakeWriteRepository{})
+
+	_, err := service.Update(context.Background(), 0, UpdateFussballerRequest{})
+
+	if !errors.Is(err, ErrInvalidID) {
+		t.Fatalf("expected ErrInvalidID, got %v", err)
+	}
+}
+
+func TestWriteServiceUpdateRejectsInvalidPosition(t *testing.T) {
+	service := NewWriteService(&fakeWriteRepository{})
+
+	_, err := service.Update(context.Background(), 20, UpdateFussballerRequest{
+		Nachname:      "Musiala",
+		Nationalitaet: "Deutschland",
+		Position:      Position("TRAINER"),
+		Geburtsdatum:  time.Date(2003, time.February, 26, 0, 0, 0, 0, time.UTC),
+		Username:      "jamal",
+	})
+
+	if !errors.Is(err, ErrValidation) {
+		t.Fatalf("expected ErrValidation, got %v", err)
 	}
 }
 
