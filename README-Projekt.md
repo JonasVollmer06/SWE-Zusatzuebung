@@ -42,7 +42,8 @@ kann.
 - Read-Service und Router fuer den Lesezugriff sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
 - Integrationstests fuer die lesenden REST-Endpunkte sind implementiert:
-  `internal/integration/read_api_test.go`.
+  `internal/integration/get_id_test.go`, `internal/integration/get_query_test.go`
+  und `internal/integration/helpers_test.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
