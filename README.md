@@ -185,3 +185,15 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 - Ergebnis: `scripts/check.ps1` ist erfolgreich. TODOs fuer Write-Service,
   Write-Router, Integrationstests und Bruno-Collection wurden in
   `README-Projekt.md` ergaenzt.
+- Nutzerrequest: Write-Service mit Validierung und Unit-Tests bauen, orientiert am
+  Read-Service. Fuer diesen Schritt soll ein neuer Branch ohne KI-Hinweis im Namen
+  verwendet werden.
+- KI-Antwort/Entscheidung: Neuer Branch `write-service-validation` wurde erstellt.
+  `internal/fussballer/write_service.go` implementiert `WriteService.Create(...)`
+  ueber einem `WriteRepository`. Fuer Pflichtfelder wird `validator` genutzt,
+  zusaetzlich wird die `Position` fachlich geprueft und String-Felder werden per
+  `strings.TrimSpace` normalisiert.
+- Ergebnis: Unit-Tests in `internal/fussballer/write_service_test.go` pruefen
+  erfolgreichen Create-Aufruf, fehlende Pflichtfelder, ungueltige Position,
+  ungueltige Adresse und Weitergabe von Repository-Fehlern. `scripts/check.ps1`
+  ist erfolgreich.

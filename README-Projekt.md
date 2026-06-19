@@ -41,6 +41,8 @@ kann.
   `internal/fussballer/repository.go`.
 - Repository fuer den Schreibzugriff auf Fussballer ist implementiert:
   `Repository.Create(...)` in `internal/fussballer/repository.go`.
+- Write-Service fuer `POST /fussballer` ist mit Validierung implementiert:
+  `internal/fussballer/write_service.go`.
 - Read-Service und Router fuer den Lesezugriff sind implementiert:
   `internal/fussballer/service.go` und `internal/fussballer/router.go`.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
@@ -344,6 +346,8 @@ swe_zusatzuebung/
       service.go
       router.go
       validation.go
+      write_service.go
+      write_service_test.go
   scripts/
     check.ps1
     format-check.ps1
@@ -373,6 +377,8 @@ swe_zusatzuebung/
 - `model.go`: Datenstrukturen fuer Fussballer, Adresse und Auszeichnungen.
 - `model_test.go`: Erste Tests fuer fachliche Konstanten, aktuell Positionswerte.
 - `validation.go`: Regeln fuer neue Fussballer.
+- `write_service.go`: Schreiblogik fuer neue Fussballer inklusive Validierung.
+- `write_service_test.go`: Unit-Tests fuer Write-Service und Validierungsfehler.
 
 ## Datenbankgrundlage
 
@@ -526,7 +532,6 @@ go test ./...
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
-- Write-Service fuer `POST /fussballer` mit Validierung implementieren.
 - Write-Router fuer `POST /fussballer` implementieren.
 - Integrationstests ergaenzen.
 - Bruno-Collection fuer REST-Requests ergaenzen.
