@@ -16,7 +16,7 @@ kann.
 - Docker ist installiert.
 - Go ist installiert: `go version go1.26.4 windows/amd64`.
 - Go-Modul ist initialisiert: `module swe-zusatzuebung`.
-- Bibliotheken `chi`, `pgx` und `validator` wurden installiert.
+- Bibliotheken `chi`, `GORM`, PostgreSQL-Treiber und `validator` wurden installiert.
 - Minimaler HTTP-Server mit `GET /health` ist implementiert.
 - Erster Handler-Test fuer `GET /health` ist implementiert und erfolgreich.
 - PostgreSQL aus dem alten Projekt wurde per Docker Compose gestartet.
@@ -106,14 +106,16 @@ Geplant sind diese Go-Bibliotheken:
 
 ```text
 github.com/go-chi/chi/v5
-github.com/jackc/pgx/v5
+gorm.io/gorm
+gorm.io/driver/postgres
 github.com/go-playground/validator/v10
 ```
 
 ### Warum diese Bibliotheken?
 
 - `chi`: schlanker HTTP-Router fuer REST-Endpunkte.
-- `pgx`: PostgreSQL-Treiber fuer direkten, gut nachvollziehbaren DB-Zugriff.
+- `GORM`: OR-Mapping zwischen PostgreSQL-Tabellen und Go-Structs.
+- `gorm.io/driver/postgres`: PostgreSQL-Treiber fuer GORM.
 - `validator`: Validierung von JSON-Requests beim Neuanlegen.
 
 Keycloak/OIDC wird vorerst nicht eingebaut, weil es laut Aufgabenstellung
@@ -133,6 +135,7 @@ go get github.com/go-chi/chi/v5
 go get github.com/jackc/pgx/v5
 go get github.com/go-playground/validator/v10
 go get github.com/jackc/pgx/v5/pgxpool@v5.10.0
+go get gorm.io/gorm gorm.io/driver/postgres
 go test ./...
 ```
 
@@ -231,9 +234,8 @@ Ausgefuehrt:
 ```powershell
 go mod init swe-zusatzuebung
 go get github.com/go-chi/chi/v5
-go get github.com/jackc/pgx/v5
 go get github.com/go-playground/validator/v10
-go get github.com/jackc/pgx/v5/pgxpool@v5.10.0
+go get gorm.io/gorm gorm.io/driver/postgres
 ```
 
 Server starten:
@@ -405,6 +407,7 @@ swe_zusatzuebung/
 - `scripts`: Hilfsskripte fuer Formatierung, Linting und Gesamtcheck.
 - `.github/workflows/ci.yml`: GitHub Actions Workflow fuer Pushes und Pull Requests.
 - `repository.go`: Datenbankzugriff.
+- `repository.go`: Datenbankzugriff mit GORM als OR-Mapper.
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
 - `router.go`: REST-Routen und HTTP-Handler.
 - `model.go`: Datenstrukturen fuer Fussballer, Adresse und Auszeichnungen.
@@ -445,6 +448,10 @@ Aktuell angelegte Go-Models:
 - `Position`
 - `CreateFussballerRequest`
 - `CreateAdresseRequest`
+
+Die Models enthalten GORM-Tags und `TableName()`-Methoden, damit das bestehende
+PostgreSQL-Schema `fussballer` mit den Tabellen `fussballer`, `adresse` und
+`auszeichnung` explizit auf Go-Structs gemappt wird.
 
 Erlaubte Werte fuer `position`:
 

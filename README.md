@@ -37,10 +37,10 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 
 ### OR-Mapping (für PostgreSQL)
 
-- Geplant: PostgreSQL-Anbindung mit `github.com/jackc/pgx/v5`.
-- Hinweis: Falls ein echtes OR-Mapping zwingend gefordert wird, wird alternativ oder
-  zusaetzlich `gorm.io/gorm` mit PostgreSQL-Treiber bewertet. Fuer den Prototyp ist
-  `pgx` einfacher, transparenter und gut testbar.
+- Verwendet: `gorm.io/gorm` mit `gorm.io/driver/postgres`.
+- Begruendung: GORM ist ein verbreitetes Go-ORM und erfuellt den geforderten Punkt
+  OR-Mapping fuer PostgreSQL. Die Go-Structs enthalten GORM-Tags und
+  `TableName()`-Methoden fuer das bestehende Schema `fussballer`.
 - Bestehende Datenbasis aus dem Projekt `fussballer`:
   Schema `fussballer`, Haupttabelle `fussballer`, zugehoerige Tabellen `adresse`,
   `auszeichnung` und `fussballer_file`.
@@ -224,6 +224,16 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   Content-Type und Validierungsfehler wurden ergaenzt. `scripts/check.ps1` ist
   erfolgreich. Ein Smoke-Test mit echtem Server und PostgreSQL war erfolgreich;
   danach wurde die DB wieder mit `reset-db.ps1` auf CSV-Stand gesetzt.
+- Nutzerrequest: Es soll echtes OR-Mapping verwendet werden; das manuelle Mapping
+  im Repository mit `pgx` soll gezielt auf GORM umgebaut werden.
+- KI-Antwort/Entscheidung: Neuer Branch `gorm-orm-mapping` wurde erstellt.
+  `gorm.io/gorm` und `gorm.io/driver/postgres` wurden installiert. Die DB-
+  Verbindung liefert nun `*gorm.DB`. Models wurden mit GORM-Tags und
+  `TableName()`-Methoden versehen. Das Repository nutzt jetzt GORM fuer `First`,
+  `Find`, `Count`, `Preload` und `Create` statt manueller SQL-Scans.
+- Ergebnis: `scripts/check.ps1` ist erfolgreich. Smoke-Test gegen PostgreSQL fuer
+  `GET /fussballer?position=TORWART` und `POST /fussballer` war erfolgreich;
+  danach wurde die DB wieder auf CSV-Stand gesetzt.
 - Nutzerrequest: Integrationstests fuer die lesenden REST-Endpunkte schreiben,
   orientiert an den Integrationstests aus dem alten Hono-Projekt.
 - KI-Antwort/Entscheidung: Es wurden Integrationstests in

@@ -2,52 +2,28 @@ package fussballer
 
 import (
 	"errors"
-	"reflect"
 	"testing"
+
+	"gorm.io/gorm"
 )
 
-func TestBuildWhereClauseEmptyCriteria(t *testing.T) {
-	where, args, err := buildWhereClause(SearchCriteria{})
+func TestApplySearchCriteriaEmptyCriteria(t *testing.T) {
+	query := &gorm.DB{}
 
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if where != "" {
-		t.Fatalf("expected empty where clause, got %q", where)
-	}
-	if len(args) != 0 {
-		t.Fatalf("expected no args, got %v", args)
-	}
-}
-
-func TestBuildWhereClauseWithCriteria(t *testing.T) {
-	position := PositionTorwart
-
-	where, args, err := buildWhereClause(SearchCriteria{
-		Nachname:      "Neuer",
-		Nationalitaet: "Deutschland",
-		Position:      &position,
-	})
-
+	result, err := applySearchCriteria(query, SearchCriteria{})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	expectedWhere := " WHERE f.nachname = $1 AND f.nationalitaet = $2 AND f.position::text = $3"
-	if where != expectedWhere {
-		t.Fatalf("expected where clause %q, got %q", expectedWhere, where)
-	}
-
-	expectedArgs := []any{"Neuer", "Deutschland", "TORWART"}
-	if !reflect.DeepEqual(args, expectedArgs) {
-		t.Fatalf("expected args %v, got %v", expectedArgs, args)
+	if result != query {
+		t.Fatal("expected unchanged query for empty criteria")
 	}
 }
 
-func TestBuildWhereClauseWithInvalidPosition(t *testing.T) {
+func TestApplySearchCriteriaRejectsInvalidPosition(t *testing.T) {
 	position := Position("TRAINER")
 
-	_, _, err := buildWhereClause(SearchCriteria{Position: &position})
+	_, err := applySearchCriteria(&gorm.DB{}, SearchCriteria{Position: &position})
 
 	if !errors.Is(err, ErrInvalidSearchParameter) {
 		t.Fatalf("expected ErrInvalidSearchParameter, got %v", err)
