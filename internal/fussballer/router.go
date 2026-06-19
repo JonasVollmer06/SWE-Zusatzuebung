@@ -150,7 +150,7 @@ func (h routerHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Location", "/fussballer/"+strconv.Itoa(player.ID))
-	w.Header().Set("ETag", strconv.Itoa(player.Version))
+	w.Header().Set("ETag", `"`+strconv.Itoa(player.Version)+`"`)
 	writeJSON(w, http.StatusCreated, player)
 }
 
@@ -186,7 +186,7 @@ func (h routerHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("ETag", strconv.Itoa(player.Version))
+	w.Header().Set("ETag", `"`+strconv.Itoa(player.Version)+`"`)
 	writeJSON(w, http.StatusOK, player)
 }
 

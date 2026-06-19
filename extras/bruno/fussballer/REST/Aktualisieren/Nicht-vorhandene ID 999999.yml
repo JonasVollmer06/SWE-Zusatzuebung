@@ -19,11 +19,11 @@ http:
     type: json
     data: |-
       {
-        "nachname": "Musiala",
+        "nachname": "Wirtz",
         "nationalitaet": "Deutschland",
         "position": "MITTELFELDSPIELER",
         "geburtsdatum": "2004-05-14T00:00:00Z",
-        "username": "hannes",
+        "username": "siegmund",
         "adresse": {
           "plz": "76133",
           "ort": "Karlsruhe",

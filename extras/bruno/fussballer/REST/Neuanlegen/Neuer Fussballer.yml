@@ -41,7 +41,7 @@ runtime:
       value: ^\/fussballer\/[0-9]+$
     - expression: res.headers.etag
       operator: eq
-      value: '"0"'
+      value: "'\"0\"'"
 
 settings:
   encodeUrl: true

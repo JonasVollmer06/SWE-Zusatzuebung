@@ -42,7 +42,7 @@ runtime:
       value: ^application\/json(; charset=utf-8)?$
     - expression: res.headers.etag
       operator: eq
-      value: '"1"'
+      value: "'\"1\"'"
 
 settings:
   encodeUrl: true
