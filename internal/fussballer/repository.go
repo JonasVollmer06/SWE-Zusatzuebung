@@ -2,13 +2,9 @@ package fussballer
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 var (
@@ -17,7 +13,7 @@ var (
 )
 
 type Repository struct {
-	db *pgxpool.Pool
+	db *gorm.DB
 }
 
 type SearchCriteria struct {
@@ -28,100 +24,42 @@ type SearchCriteria struct {
 	Offset        int
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository {
+func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
 func (r *Repository) FindByID(ctx context.Context, id int) (*Fussballer, error) {
-	const query = `
-		SELECT
-			f.id,
-			f.version,
-			f.nachname,
-			f.nationalitaet,
-			f.position::text,
-			f.geburtsdatum,
-			f.username,
-			f.erzeugt,
-			f.aktualisiert,
-			a.id,
-			a.plz,
-			a.ort,
-			a.bundesland,
-			a.fussballer_id
-		FROM fussballer.fussballer f
-		LEFT JOIN fussballer.adresse a ON a.fussballer_id = f.id
-		WHERE f.id = $1`
+	var player Fussballer
 
-	player, err := scanFussballer(r.db.QueryRow(ctx, query, id))
+	err := r.withRelations(ctx).
+		First(&player, "id = ?", id).
+		Error
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrNotFound
 		}
 		return nil, err
 	}
 
-	awards, err := r.findAuszeichnungen(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	player.Auszeichnungen = awards
-
-	return player, nil
+	return &player, nil
 }
 
 func (r *Repository) Find(ctx context.Context, criteria SearchCriteria) ([]Fussballer, error) {
-	where, args, err := buildWhereClause(criteria)
+	query, err := applySearchCriteria(r.withRelations(ctx), criteria)
 	if err != nil {
 		return nil, err
 	}
 
-	query := `
-		SELECT
-			f.id,
-			f.version,
-			f.nachname,
-			f.nationalitaet,
-			f.position::text,
-			f.geburtsdatum,
-			f.username,
-			f.erzeugt,
-			f.aktualisiert,
-			a.id,
-			a.plz,
-			a.ort,
-			a.bundesland,
-			a.fussballer_id
-		FROM fussballer.fussballer f
-		LEFT JOIN fussballer.adresse a ON a.fussballer_id = f.id` + where + `
-		ORDER BY f.id`
-
 	if criteria.Limit > 0 {
-		args = append(args, criteria.Limit)
-		query += fmt.Sprintf(" LIMIT $%d", len(args))
+		query = query.Limit(criteria.Limit)
 	}
 
 	if criteria.Offset > 0 {
-		args = append(args, criteria.Offset)
-		query += fmt.Sprintf(" OFFSET $%d", len(args))
+		query = query.Offset(criteria.Offset)
 	}
 
-	rows, err := r.db.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	players := make([]Fussballer, 0)
-	for rows.Next() {
-		player, err := scanFussballer(rows)
-		if err != nil {
-			return nil, err
-		}
-		players = append(players, *player)
-	}
-
-	if err := rows.Err(); err != nil {
+	var players []Fussballer
+	if err := query.Order("id").Find(&players).Error; err != nil {
 		return nil, err
 	}
 
@@ -133,227 +71,69 @@ func (r *Repository) Find(ctx context.Context, criteria SearchCriteria) ([]Fussb
 }
 
 func (r *Repository) Count(ctx context.Context, criteria SearchCriteria) (int, error) {
-	where, args, err := buildWhereClause(criteria)
+	query, err := applySearchCriteria(r.db.WithContext(ctx).Model(&Fussballer{}), criteria)
 	if err != nil {
 		return 0, err
 	}
 
-	query := "SELECT count(*) FROM fussballer.fussballer f" + where
-
-	var count int
-	if err := r.db.QueryRow(ctx, query, args...).Scan(&count); err != nil {
+	var count int64
+	if err := query.Count(&count).Error; err != nil {
 		return 0, err
 	}
 
-	return count, nil
+	return int(count), nil
 }
 
 func (r *Repository) Create(ctx context.Context, request CreateFussballerRequest) (*Fussballer, error) {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer rollbackIfOpen(ctx, tx)
-
-	player, err := insertFussballer(ctx, tx, request)
-	if err != nil {
-		return nil, err
+	position := request.Position
+	player := Fussballer{
+		Nachname:      request.Nachname,
+		Nationalitaet: request.Nationalitaet,
+		Position:      &position,
+		Geburtsdatum:  request.Geburtsdatum,
+		Username:      request.Username,
 	}
 
 	if request.Adresse != nil {
-		address, err := insertAdresse(ctx, tx, *request.Adresse, player.ID)
-		if err != nil {
-			return nil, err
-		}
-		player.Adresse = address
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	return player, nil
-}
-
-func (r *Repository) findAuszeichnungen(ctx context.Context, fussballerID int) ([]Auszeichnung, error) {
-	const query = `
-		SELECT id, bezeichnung, saison, fussballer_id
-		FROM fussballer.auszeichnung
-		WHERE fussballer_id = $1
-		ORDER BY id`
-
-	rows, err := r.db.Query(ctx, query, fussballerID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	awards := make([]Auszeichnung, 0)
-	for rows.Next() {
-		var award Auszeichnung
-		if err := rows.Scan(&award.ID, &award.Bezeichnung, &award.Saison, &award.FussballerID); err != nil {
-			return nil, err
-		}
-		awards = append(awards, award)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return awards, nil
-}
-
-func insertFussballer(ctx context.Context, tx pgx.Tx, request CreateFussballerRequest) (*Fussballer, error) {
-	const query = `
-		INSERT INTO fussballer.fussballer (
-			nachname,
-			nationalitaet,
-			position,
-			geburtsdatum,
-			username
-		)
-		VALUES ($1, $2, $3::fussballer.position_enum, $4, $5)
-		RETURNING
-			id,
-			version,
-			nachname,
-			nationalitaet,
-			position::text,
-			geburtsdatum,
-			username,
-			erzeugt,
-			aktualisiert,
-			NULL::integer,
-			NULL::text,
-			NULL::text,
-			NULL::text,
-			NULL::integer`
-
-	return scanFussballer(tx.QueryRow(
-		ctx,
-		query,
-		request.Nachname,
-		request.Nationalitaet,
-		string(request.Position),
-		request.Geburtsdatum,
-		request.Username,
-	))
-}
-
-func insertAdresse(ctx context.Context, tx pgx.Tx, request CreateAdresseRequest, fussballerID int) (*Adresse, error) {
-	const query = `
-		INSERT INTO fussballer.adresse (
-			plz,
-			ort,
-			bundesland,
-			fussballer_id
-		)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, plz, ort, bundesland, fussballer_id`
-
-	var address Adresse
-	err := tx.QueryRow(
-		ctx,
-		query,
-		request.PLZ,
-		request.Ort,
-		request.Bundesland,
-		fussballerID,
-	).Scan(
-		&address.ID,
-		&address.PLZ,
-		&address.Ort,
-		&address.Bundesland,
-		&address.FussballerID,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &address, nil
-}
-
-func rollbackIfOpen(ctx context.Context, tx pgx.Tx) {
-	_ = tx.Rollback(ctx)
-}
-
-type rowScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanFussballer(row rowScanner) (*Fussballer, error) {
-	var player Fussballer
-	var position sql.NullString
-	var addressID sql.NullInt64
-	var addressPLZ sql.NullString
-	var addressOrt sql.NullString
-	var addressBundesland sql.NullString
-	var addressFussballerID sql.NullInt64
-
-	err := row.Scan(
-		&player.ID,
-		&player.Version,
-		&player.Nachname,
-		&player.Nationalitaet,
-		&position,
-		&player.Geburtsdatum,
-		&player.Username,
-		&player.Erzeugt,
-		&player.Aktualisiert,
-		&addressID,
-		&addressPLZ,
-		&addressOrt,
-		&addressBundesland,
-		&addressFussballerID,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if position.Valid {
-		value := Position(position.String)
-		player.Position = &value
-	}
-
-	if addressID.Valid {
 		player.Adresse = &Adresse{
-			ID:           int(addressID.Int64),
-			PLZ:          addressPLZ.String,
-			Ort:          addressOrt.String,
-			Bundesland:   addressBundesland.String,
-			FussballerID: int(addressFussballerID.Int64),
+			PLZ:        request.Adresse.PLZ,
+			Ort:        request.Adresse.Ort,
+			Bundesland: request.Adresse.Bundesland,
 		}
+	}
+
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&player).Error
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &player, nil
 }
 
-func buildWhereClause(criteria SearchCriteria) (string, []any, error) {
-	clauses := make([]string, 0, 3)
-	args := make([]any, 0, 3)
+func (r *Repository) withRelations(ctx context.Context) *gorm.DB {
+	return r.db.WithContext(ctx).
+		Preload("Adresse").
+		Preload("Auszeichnungen")
+}
 
+func applySearchCriteria(query *gorm.DB, criteria SearchCriteria) (*gorm.DB, error) {
 	if criteria.Nachname != "" {
-		args = append(args, criteria.Nachname)
-		clauses = append(clauses, fmt.Sprintf("f.nachname = $%d", len(args)))
+		query = query.Where("nachname = ?", criteria.Nachname)
 	}
 
 	if criteria.Nationalitaet != "" {
-		args = append(args, criteria.Nationalitaet)
-		clauses = append(clauses, fmt.Sprintf("f.nationalitaet = $%d", len(args)))
+		query = query.Where("nationalitaet = ?", criteria.Nationalitaet)
 	}
 
 	if criteria.Position != nil {
 		if !criteria.Position.IsValid() {
-			return "", nil, ErrInvalidSearchParameter
+			return nil, ErrInvalidSearchParameter
 		}
-		args = append(args, string(*criteria.Position))
-		clauses = append(clauses, fmt.Sprintf("f.position::text = $%d", len(args)))
+
+		query = query.Where("position = ?", string(*criteria.Position))
 	}
 
-	if len(clauses) == 0 {
-		return "", args, nil
-	}
-
-	return " WHERE " + strings.Join(clauses, " AND "), args, nil
+	return query, nil
 }

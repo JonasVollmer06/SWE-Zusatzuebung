@@ -4,11 +4,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(ctx, databaseURL)
+func Connect(ctx context.Context, databaseURL string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
 	}
@@ -16,10 +22,10 @@ func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := pool.Ping(pingCtx); err != nil {
-		pool.Close()
+	if err := sqlDB.PingContext(pingCtx); err != nil {
+		_ = sqlDB.Close()
 		return nil, err
 	}
 
-	return pool, nil
+	return db, nil
 }

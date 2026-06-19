@@ -21,7 +21,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("database connection failed: %v", err)
 	}
-	defer dbpool.Close()
+	sqlDB, err := dbpool.DB()
+	if err != nil {
+		log.Fatalf("database handle failed: %v", err)
+	}
+	defer sqlDB.Close()
 
 	log.Println("database connection is ready")
 
