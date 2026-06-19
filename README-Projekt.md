@@ -33,6 +33,8 @@ kann.
 - Fuer PostgreSQL gibt es ein projektlokales Setup-Script:
   `extras/compose/postgres/setup.ps1`.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
+- Formatierung, Linting und Gesamtcheck sind ueber PowerShell-Skripte im Ordner
+  `scripts` verfuegbar.
 - Bestehendes Datenmodell wurde aus dem Projekt `fussballer` analysiert.
 
 ## Voraussetzungen
@@ -229,6 +231,24 @@ Tests ausfuehren:
 go test ./...
 ```
 
+Formatierung ausfuehren:
+
+```powershell
+.\scripts\format.ps1
+```
+
+Linting ausfuehren:
+
+```powershell
+.\scripts\lint.ps1
+```
+
+Formatierung, Linting und Tests gemeinsam ausfuehren:
+
+```powershell
+.\scripts\check.ps1
+```
+
 Datenbank starten:
 
 Erstsetup oder reproduzierbares Setup:
@@ -307,6 +327,11 @@ swe_zusatzuebung/
       service.go
       router.go
       validation.go
+  scripts/
+    check.ps1
+    format.ps1
+    go-tools.ps1
+    lint.ps1
   ReadMe.md
   README-Projekt.md
   go.mod
@@ -322,6 +347,7 @@ swe_zusatzuebung/
 - `internal/database`: Aufbau und Pruefung der PostgreSQL-Verbindung.
 - `internal/server`: Allgemeiner HTTP-Router, Health Check und Startbanner.
 - `internal/fussballer`: Fachlogik fuer Fussballer.
+- `scripts`: Hilfsskripte fuer Formatierung, Linting und Gesamtcheck.
 - `repository.go`: Datenbankzugriff.
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
 - `router.go`: REST-Routen und HTTP-Handler.
@@ -454,11 +480,14 @@ Geplant:
 
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
 - Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
+- Formatierung mit `gofmt`.
+- Linting/statische Pruefung mit `go vet`.
 
 Spaetere Testbefehle:
 
 ```powershell
 go test ./...
+.\scripts\check.ps1
 ```
 
 ## Offene Punkte
@@ -466,6 +495,7 @@ go test ./...
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
+- Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - Repository fuer `GET /fussballer/{id}` implementieren.
 - Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.

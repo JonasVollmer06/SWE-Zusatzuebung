@@ -130,3 +130,10 @@ TODO: Repository-Link eintragen, sobald vorhanden.
 - Ergebnis: `setup.ps1` wurde erfolgreich ausgefuehrt. Es erkannte die vorhandene
   Datenbank, uebersprang die SQL-Neuanlage und pruefte `select count(*) from
   fussballer.fussballer;` mit Ergebnis 7. `go test ./...` ist erfolgreich.
+- Nutzerrequest: Linter und Formatierungstool einbauen, pruefen und ausfuehren.
+- KI-Antwort/Entscheidung: Fuer den ersten Schritt werden Go-Bordmittel verwendet:
+  `gofmt` als Formatierer und `go vet` als Linter/statische Pruefung. Dafuer wurden
+  die Skripte `scripts/format.ps1`, `scripts/lint.ps1`, `scripts/check.ps1` und
+  `scripts/go-tools.ps1` angelegt.
+- Ergebnis: PowerShell-Syntaxcheck, Formatierung, Linting und Gesamtcheck mit Tests
+  wurden erfolgreich ausgefuehrt.
