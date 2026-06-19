@@ -197,3 +197,10 @@ TODO: Repository-Link eintragen, sobald vorhanden.
   erfolgreichen Create-Aufruf, fehlende Pflichtfelder, ungueltige Position,
   ungueltige Adresse und Weitergabe von Repository-Fehlern. `scripts/check.ps1`
   ist erfolgreich.
+- Nutzerrequest: Die laufende DB soll beim DB-Start wieder auf den Stand der CSV-
+  Dateien zurueckgesetzt werden, wie im alten Projekt mit DB-Populate.
+- KI-Antwort/Entscheidung: `drop-table.sql` wurde in
+  `extras/compose/postgres/init/fussballer/sql` uebernommen. `setup.ps1` legt die
+  Datenbank nur bei Bedarf an, setzt die Tabellen aber bei jedem Lauf mit
+  `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den CSV-Stand
+  zurueck.

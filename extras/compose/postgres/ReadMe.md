@@ -36,12 +36,14 @@ Es fuehrt aus:
   initialisiert wird.
 - TLS-Zertifikate nach `/var/lib/postgresql/18/data` kopieren.
 - PostgreSQL normal mit TLS starten.
-- SQL-Initialisierung ausfuehren, falls die Datenbank `fussballer` noch nicht existiert.
+- Datenbank `fussballer` anlegen, falls sie noch nicht existiert.
+- Tabellen immer mit `drop-table.sql`, `create-table.sql` und `copy-csv.sql` auf den
+  Stand der CSV-Dateien zuruecksetzen.
 - Datensaetze in `fussballer.fussballer` zaehlen.
 
-Wenn die Datenbank bereits existiert, wird die SQL-Initialisierung uebersprungen.
-Dadurch kann das Script auch auf einem bereits vorbereiteten Rechner erneut
-ausgefuehrt werden.
+Wenn die Datenbank bereits existiert, wird sie nicht neu angelegt. Die Tabellen
+werden aber bei jedem Aufruf von `setup.ps1` neu aus den CSV-Dateien geladen.
+Das ist gewollt, damit lokale Testdaten nach Requests wieder reproduzierbar sind.
 
 ### Normaler Start
 
@@ -114,6 +116,14 @@ count
 -----
 7
 ```
+
+Positionen im CSV-Ausgangsbestand:
+
+```powershell
+docker exec -e PGPASSWORD=p postgres psql -U postgres -d fussballer -c "select id, nachname, position from fussballer.fussballer order by id;"
+```
+
+Dabei enthaelt der CSV-Stand u.a. `id=30` mit `position=TORWART`.
 
 ## Named Volumes
 

@@ -98,16 +98,22 @@ function Start-Postgres {
     Wait-PostgresHealthy
 }
 
-function Initialize-DatabaseIfNeeded {
+function Ensure-DatabaseExists {
     if (Test-FussballerDatabaseExists) {
-        Write-Host "Database fussballer already exists. Skipping SQL initialization."
+        Write-Host "Database fussballer already exists."
         return
     }
 
-    Write-Host "Initializing database fussballer from project-local SQL and CSV files."
+    Write-Host "Creating database fussballer from project-local SQL files."
 
     Invoke-Checked @("docker", "compose", "-f", $composeFile, "exec", "-T", "-e", "PGPASSWORD=p", "db", "psql", "--dbname=postgres", "--username=postgres", "--file=/init/fussballer/sql/create-db.sql")
     Invoke-Checked @("docker", "compose", "-f", $composeFile, "exec", "-T", "-e", "PGPASSWORD=p", "db", "psql", "--dbname=fussballer", "--username=fussballer", "--file=/init/fussballer/sql/create-schema.sql")
+}
+
+function Reset-DatabaseFromCsv {
+    Write-Host "Resetting database fussballer from project-local CSV files."
+
+    Invoke-Checked @("docker", "compose", "-f", $composeFile, "exec", "-T", "-e", "PGPASSWORD=p", "db", "psql", "--dbname=fussballer", "--username=fussballer", "--file=/init/fussballer/sql/drop-table.sql")
     Invoke-Checked @("docker", "compose", "-f", $composeFile, "exec", "-T", "-e", "PGPASSWORD=p", "db", "psql", "--dbname=fussballer", "--username=fussballer", "--file=/init/fussballer/sql/create-table.sql")
     Invoke-Checked @("docker", "compose", "-f", $composeFile, "exec", "-T", "-e", "PGPASSWORD=p", "db", "psql", "--dbname=fussballer", "--username=postgres", "--file=/init/fussballer/sql/copy-csv.sql")
 }
@@ -124,7 +130,8 @@ try {
     Initialize-Volumes
     Initialize-TlsIfNeeded
     Start-Postgres
-    Initialize-DatabaseIfNeeded
+    Ensure-DatabaseExists
+    Reset-DatabaseFromCsv
     Show-RowCount
 
     Write-Host "PostgreSQL setup finished."

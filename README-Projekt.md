@@ -32,6 +32,8 @@ kann.
   `extras/compose/postgres/compose.yml`.
 - Fuer PostgreSQL gibt es ein projektlokales Setup-Script:
   `extras/compose/postgres/setup.ps1`.
+- Das PostgreSQL-Setup-Script setzt die Tabellen bei jedem Lauf auf den Stand der
+  CSV-Dateien zurueck.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
 - Formatierung, Linting und Gesamtcheck sind ueber PowerShell-Skripte im Ordner
   `scripts` verfuegbar.
@@ -272,6 +274,10 @@ Erstsetup oder reproduzierbares Setup:
 ```powershell
 .\extras\compose\postgres\setup.ps1
 ```
+
+Hinweis: Dieses Script startet PostgreSQL und laedt die Tabellen jedes Mal neu aus
+den CSV-Dateien. Dadurch werden Daten, die durch manuelle REST-Requests entstanden
+sind, wieder auf den Ausgangsstand zurueckgesetzt.
 
 Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
 
@@ -530,6 +536,7 @@ go test ./...
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
 - PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
+- DB-Reset auf CSV-Stand ist im PostgreSQL-Setup-Script eingebaut.
 - Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
 - GitHub Actions CI ist eingerichtet.
 - Write-Router fuer `POST /fussballer` implementieren.
