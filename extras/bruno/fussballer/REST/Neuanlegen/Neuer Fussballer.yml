@@ -12,19 +12,25 @@ http:
     - name: Content-Type
       value: application/json
   body:
-    mode: json
-    json: |-
+    type: json
+    data: |-
       {
-        "nachname": "Musiala",
+        "nachname": "Schneider",
         "nationalitaet": "Deutschland",
         "position": "MITTELFELDSPIELER",
-        "geburtsdatum": "2003-02-26T00:00:00Z",
-        "username": "bruno-create",
+        "geburtsdatum": "2004-05-14",
+        "username": "hannes",
         "adresse": {
-          "plz": "80331",
-          "ort": "Muenchen",
-          "bundesland": "Bayern"
-        }
+          "plz": "76133",
+          "ort": "Karlsruhe",
+          "bundesland": "BW"
+        },
+        "auszeichnungen": [
+          {
+            "bezeichnung": "Spieler des Monats",
+            "saison": "2025/2026"
+          }
+        ]
       }
   auth: inherit
 
@@ -52,7 +58,7 @@ runtime:
       value: ^\/fussballer\/[0-9]+$
     - expression: res.headers.etag
       operator: eq
-      value: "\"0\""
+      value: '"0"'
 
 settings:
   encodeUrl: true
