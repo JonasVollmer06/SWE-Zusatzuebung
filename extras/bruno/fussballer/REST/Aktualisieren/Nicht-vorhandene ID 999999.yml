@@ -16,14 +16,19 @@ http:
       value: "999999"
       type: path
   body:
-    mode: json
-    json: |-
+    type: json
+    data: |-
       {
-        "nachname": "Aktualisiert",
+        "nachname": "Musiala",
         "nationalitaet": "Deutschland",
-        "position": "STUERMER",
-        "geburtsdatum": "2002-02-02T00:00:00Z",
-        "username": "updated-not-found"
+        "position": "MITTELFELDSPIELER",
+        "geburtsdatum": "2004-05-14T00:00:00Z",
+        "username": "hannes",
+        "adresse": {
+          "plz": "76133",
+          "ort": "Karlsruhe",
+          "bundesland": "BW"
+        }
       }
   auth: inherit
 

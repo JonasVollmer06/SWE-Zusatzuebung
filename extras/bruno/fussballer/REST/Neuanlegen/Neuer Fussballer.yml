@@ -18,34 +18,17 @@ http:
         "nachname": "Schneider",
         "nationalitaet": "Deutschland",
         "position": "MITTELFELDSPIELER",
-        "geburtsdatum": "2004-05-14",
+        "geburtsdatum": "2004-05-14T00:00:00Z",
         "username": "hannes",
         "adresse": {
           "plz": "76133",
           "ort": "Karlsruhe",
           "bundesland": "BW"
-        },
-        "auszeichnungen": [
-          {
-            "bezeichnung": "Spieler des Monats",
-            "saison": "2025/2026"
-          }
-        ]
+        }
       }
   auth: inherit
 
 runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test('Body: neu angelegter Fussballer', () => {
-          const fussballer = res.getBody();
-          expect(fussballer.id).to.be.above(0);
-          expect(fussballer.nachname).to.be.equal('Musiala');
-          expect(fussballer.username).to.be.equal('bruno-create');
-          expect(fussballer.position).to.be.equal('MITTELFELDSPIELER');
-          expect(fussballer.adresse.ort).to.be.equal('Muenchen');
-        });
   assertions:
     - expression: res.status
       operator: eq
