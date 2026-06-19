@@ -30,7 +30,13 @@ kann.
   `CreateFussballerRequest` wurden angelegt.
 - PostgreSQL kann jetzt direkt aus diesem Projekt gestartet werden:
   `extras/compose/postgres/compose.yml`.
+- Fuer PostgreSQL gibt es ein projektlokales Setup-Script:
+  `extras/compose/postgres/setup.ps1`.
 - Beim Serverstart wird ein Banner fuer die Fussballer REST API ausgegeben.
+- Formatierung, Linting und Gesamtcheck sind ueber PowerShell-Skripte im Ordner
+  `scripts` verfuegbar.
+- GitHub Actions CI ist eingerichtet und prueft bei Push und Pull Request
+  Formatierung, `go vet` und Tests.
 - Repository fuer den Lesezugriff auf Fussballer ist implementiert:
   `internal/fussballer/repository.go`.
 - Read-Service fuer den Lesezugriff ist implementiert:
@@ -231,7 +237,39 @@ Tests ausfuehren:
 go test ./...
 ```
 
+Formatierung ausfuehren:
+
+```powershell
+.\scripts\format.ps1
+```
+
+Formatierung nur pruefen:
+
+```powershell
+.\scripts\format-check.ps1
+```
+
+Linting ausfuehren:
+
+```powershell
+.\scripts\lint.ps1
+```
+
+Formatierung, Linting und Tests gemeinsam ausfuehren:
+
+```powershell
+.\scripts\check.ps1
+```
+
 Datenbank starten:
+
+Erstsetup oder reproduzierbares Setup:
+
+```powershell
+.\extras\compose\postgres\setup.ps1
+```
+
+Normaler Start, wenn die Volumes/Datenbank bereits eingerichtet sind:
 
 ```powershell
 docker compose -f .\extras\compose\postgres\compose.yml up -d
@@ -276,12 +314,17 @@ swe_zusatzuebung/
   cmd/
     server/
       main.go
+  .github/
+    workflows/
+      ci.yml
   extras/
     compose/
       postgres/
         compose.yml
+        compose.notls.yml
         password.txt
         ReadMe.md
+        setup.ps1
         init/
   internal/
     config/
@@ -299,6 +342,12 @@ swe_zusatzuebung/
       service.go
       router.go
       validation.go
+  scripts/
+    check.ps1
+    format-check.ps1
+    format.ps1
+    go-tools.ps1
+    lint.ps1
   ReadMe.md
   README-Projekt.md
   go.mod
@@ -308,11 +357,14 @@ swe_zusatzuebung/
 ### Bedeutung der Ordner
 
 - `cmd/server`: Einstiegspunkt der Anwendung. Hier startet der HTTP-Server.
-- `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien.
+- `extras/compose/postgres`: Docker-Compose-Setup fuer PostgreSQL mit Init-Dateien
+  und Setup-Script.
 - `internal/config`: Konfiguration, z.B. Port und Datenbank-URL.
 - `internal/database`: Aufbau und Pruefung der PostgreSQL-Verbindung.
 - `internal/server`: Allgemeiner HTTP-Router, Health Check und Startbanner.
 - `internal/fussballer`: Fachlogik fuer Fussballer.
+- `scripts`: Hilfsskripte fuer Formatierung, Linting und Gesamtcheck.
+- `.github/workflows/ci.yml`: GitHub Actions Workflow fuer Pushes und Pull Requests.
 - `repository.go`: Datenbankzugriff.
 - `service.go`: Geschaeftslogik zwischen Router und Repository.
 - `router.go`: REST-Routen und HTTP-Handler.
@@ -447,16 +499,25 @@ Geplant:
 
 - Unit-/Handler-Tests mit Go und `net/http/httptest`.
 - Repository-Tests optional gegen laufende PostgreSQL-Datenbank.
+- Formatierung mit `gofmt`.
+- Linting/statische Pruefung mit `go vet`.
+- CI bei GitHub fuehrt Format-Check, `go vet` und `go test ./...` aus.
 
 Spaetere Testbefehle:
 
 ```powershell
 go test ./...
+.\scripts\check.ps1
 ```
 
 ## Offene Punkte
 
 - DB-Verbindung ist grundlegend konfiguriert.
 - PostgreSQL-Compose-Setup ist im aktuellen Projekt vorhanden und getestet.
+- PostgreSQL-Setup-Script mit alten Volume-Namen ist vorhanden und getestet.
+- Formatierung, Linting und Gesamtcheck sind eingerichtet und getestet.
+- GitHub Actions CI ist eingerichtet.
+- Repository fuer `GET /fussballer/{id}` implementieren.
+- Service fuer `GET /fussballer/{id}` implementieren.
 - Router fuer `GET /fussballer/{id}` implementieren.
 - Tests ergaenzen.
